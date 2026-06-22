@@ -7,7 +7,6 @@ import { PrimeReactContext } from "primereact/api";
 import { useEventListener, useUnmountEffect } from "primereact/hooks";
 import { classNames } from "primereact/utils";
 import React, { useContext, useEffect, useRef } from "react";
-import AppConfig from "./AppConfig";
 import AppFooter from "./AppFooter";
 import AppSidebar from "./AppSidebar";
 import AppTopbar from "./AppTopbar";
@@ -122,6 +121,10 @@ const Layout = ({ children }: ChildContainerProps) => {
     unbindProfileMenuOutsideClickListener();
   });
 
+  useEffect(() => {
+    document.documentElement.style.fontSize = layoutConfig.scale + "px";
+  }, [layoutConfig.scale]);
+
   const containerClass = classNames("layout-wrapper", {
     "layout-overlay": layoutConfig.menuMode === "overlay",
     "layout-static": layoutConfig.menuMode === "static",
@@ -145,7 +148,6 @@ const Layout = ({ children }: ChildContainerProps) => {
           <div className="layout-main">{children}</div>
           <AppFooter />
         </div>
-        <AppConfig />
         <div className="layout-mask"></div>
       </div>
     </React.Fragment>
