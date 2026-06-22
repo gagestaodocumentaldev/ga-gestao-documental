@@ -1,15 +1,11 @@
-// app/tabelas/page.tsx
-
 import { buscarPecas } from "@/services/peca-service";
-import TabelaPecas from "./_components/tabela-pecas";
+import ClientTabelaPecas from "./_components/tabelaPecas";
 
 export default async function TabelasPage() {
   const pecas = await buscarPecas("");
-
   return (
     <>
-      <h1 className="text-2xl mb-4">Peças</h1>
-      <TabelaPecas pecas={pecas} />
+      <ClientTabelaPecas pecas={pecas} titulo="Peças" />
     </>
   );
 }
