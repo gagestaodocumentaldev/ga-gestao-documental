@@ -149,7 +149,10 @@ export default function ClientTabelaPecas({
     setPeca((prev) => ({ ...prev, [name]: val }));
   };
 
-  const onInputNumberChange = (val: number | null, name: string) => {
+  const onInputNumberChange = (
+    val: number | null | undefined,
+    name: string,
+  ) => {
     setPeca((prev) => ({ ...prev, [name]: val || 0 }));
   };
 
