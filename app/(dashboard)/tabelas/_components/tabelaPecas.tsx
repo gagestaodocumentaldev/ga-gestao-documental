@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -12,6 +13,11 @@ import { classNames } from "primereact/utils";
 import TabelaGenerica from "../../../../components/tabelaGenerica";
 import { formatCurrency } from "@/utils/numberUtil";
 import { Peca } from "@/types/peca";
+import {
+  criarPeca,
+  atualizarPeca,
+  deletarPeca as deletarPecaService,
+} from "@/services/peca-service";
 
 interface ClientTabelaPecasProps {
   pecas: Peca[];
@@ -22,9 +28,10 @@ export default function ClientTabelaPecas({
   pecas,
   titulo,
 }: ClientTabelaPecasProps) {
-  // Molde de um objeto vazio para resetar o formulário
+  const router = useRouter();
+
   const pecaVazia: Peca = {
-    id: "",
+    id: 0,
     codigo: "",
     descricao: "",
     marca: "",
@@ -33,24 +40,16 @@ export default function ClientTabelaPecas({
     preco_venda: 0,
   };
 
-  // Estados locais
-  const [listaPecas, setListaPecas] = useState<Peca[]>([]);
   const [peca, setPeca] = useState<Peca>(pecaVazia);
   const [submetido, setSubmetido] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [deletando, setDeletando] = useState(false);
 
-  // Visibilidade dos Modais
   const [dialogPeca, setDialogPeca] = useState(false);
   const [dialogDeletarPeca, setDialogDeletarPeca] = useState(false);
 
-  // Referências para componentes do PrimeReact
   const toast = useRef<Toast>(null);
 
-  // Sincroniza a prop inicial com o estado local
-  useEffect(() => {
-    setListaPecas(pecas);
-  }, [pecas]);
-
-  // --- FUNÇÕES DE CONTROLE DOS DIALOGS ---
   const abrirNovo = () => {
     setPeca(pecaVazia);
     setSubmetido(false);
@@ -72,57 +71,76 @@ export default function ClientTabelaPecas({
     setDialogDeletarPeca(true);
   };
 
-  // --- PERSISTÊNCIA DOS DADOS (CRUD) ---
-  const salvarPeca = () => {
+  const salvarPeca = async () => {
     setSubmetido(true);
 
-    // Validação simples: campo obrigatório preenchido
-    if (peca.descricao?.trim() && peca.codigo?.trim()) {
-      let _pecas = [...listaPecas];
-      let _peca = { ...peca };
+    if (!peca.descricao?.trim() || !peca.codigo?.trim()) {
+      return;
+    }
 
-      if (peca.id) {
-        // Modo Edição
-        const index = _pecas.findIndex((val) => val.id === peca.id);
-        _pecas[index] = _peca;
-        toast.current?.show({
-          severity: "success",
-          summary: "Sucesso",
-          detail: "Peça Atualizada",
-          life: 3000,
-        });
+    setSalvando(true);
+
+    try {
+      const isEdicao = peca.id > 0;
+
+      if (isEdicao) {
+        await atualizarPeca(peca.id, peca);
       } else {
-        // Modo Criação (Gerando um ID provisório se necessário)
-        _peca.id = Math.random().toString(36).substr(2, 9);
-        _pecas.push(_peca);
-        toast.current?.show({
-          severity: "success",
-          summary: "Sucesso",
-          detail: "Peça Criada",
-          life: 3000,
-        });
+        await criarPeca(peca);
       }
 
-      setListaPecas(_pecas);
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: isEdicao ? "Peça Atualizada" : "Peça Criada",
+        life: 3000,
+      });
+
       setDialogPeca(false);
       setPeca(pecaVazia);
+      router.refresh();
+    } catch (err) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: err instanceof Error ? err.message : "Erro desconhecido",
+        life: 3000,
+      });
+    } finally {
+      setSalvando(false);
     }
   };
 
-  const deletarPeca = () => {
-    let _pecas = listaPecas.filter((val) => val.id !== peca.id);
-    setListaPecas(_pecas);
-    setDialogDeletarPeca(false);
-    setPeca(pecaVazia);
-    toast.current?.show({
-      severity: "success",
-      summary: "Sucesso",
-      detail: "Peça Excluída",
-      life: 3000,
-    });
+  const deletarPeca = async () => {
+    if (!peca.id) return;
+
+    setDeletando(true);
+
+    try {
+      await deletarPecaService(peca.id);
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Peça Excluída",
+        life: 3000,
+      });
+
+      setDialogDeletarPeca(false);
+      setPeca(pecaVazia);
+      router.refresh();
+    } catch (err) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: err instanceof Error ? err.message : "Erro desconhecido",
+        life: 3000,
+      });
+    } finally {
+      setDeletando(false);
+    }
   };
 
-  // --- ATUALIZAÇÃO DOS INPUTS NO STATE ---
   const onInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     name: string,
@@ -135,7 +153,6 @@ export default function ClientTabelaPecas({
     setPeca((prev) => ({ ...prev, [name]: val || 0 }));
   };
 
-  // --- TEMPLATES VISUAIS (TOOLBARS E AÇÕES) ---
   const colunaAcoesTemplate = (rowData: Peca) => (
     <div className="flex gap-2">
       <Button
@@ -153,7 +170,6 @@ export default function ClientTabelaPecas({
     </div>
   );
 
-  // --- FOOTERS DOS MODAIS ---
   const rodapeDialogPeca = (
     <>
       <Button
@@ -161,8 +177,15 @@ export default function ClientTabelaPecas({
         icon="pi pi-times"
         text
         onClick={esconderDialog}
+        disabled={salvando}
       />
-      <Button label="Salvar" icon="pi pi-check" text onClick={salvarPeca} />
+      <Button
+        label="Salvar"
+        icon="pi pi-check"
+        text
+        onClick={salvarPeca}
+        loading={salvando}
+      />
     </>
   );
 
@@ -173,8 +196,15 @@ export default function ClientTabelaPecas({
         icon="pi pi-times"
         text
         onClick={() => setDialogDeletarPeca(false)}
+        disabled={deletando}
       />
-      <Button label="Sim" icon="pi pi-check" text onClick={deletarPeca} />
+      <Button
+        label="Sim"
+        icon="pi pi-check"
+        text
+        onClick={deletarPeca}
+        loading={deletando}
+      />
     </>
   );
 
@@ -183,7 +213,7 @@ export default function ClientTabelaPecas({
       <Toast ref={toast} />
 
       <TabelaGenerica
-        value={listaPecas}
+        value={pecas}
         titulo={titulo}
         headerActions={
           <Button
@@ -194,7 +224,6 @@ export default function ClientTabelaPecas({
           />
         }
       >
-        {/* Colunas do seu layout */}
         <Column field="codigo" header="Código" sortable />
         <Column field="descricao" header="Descrição" sortable />
         <Column field="marca" header="Marca" sortable />
@@ -202,15 +231,13 @@ export default function ClientTabelaPecas({
         <Column
           header="Preço custo"
           sortable
-          body={(row) => formatCurrency(row.preco_custo)}
+          body={(row: Peca) => formatCurrency(row.preco_custo)}
         />
         <Column
           header="Preço venda"
           sortable
-          body={(row) => formatCurrency(row.preco_venda)}
+          body={(row: Peca) => formatCurrency(row.preco_venda)}
         />
-
-        {/* Coluna Customizada de Ações (Editar/Excluir) */}
         <Column
           header="Ações"
           body={colunaAcoesTemplate}
@@ -219,7 +246,6 @@ export default function ClientTabelaPecas({
         ></Column>
       </TabelaGenerica>
 
-      {/* --- DIALOG DE FORMULÁRIO (CRIAR / EDITAR) --- */}
       <Dialog
         visible={dialogPeca}
         style={{ width: "450px" }}
@@ -270,7 +296,7 @@ export default function ClientTabelaPecas({
           </label>
           <InputText
             id="marca"
-            value={peca.marca}
+            value={peca.marca ?? ""}
             onChange={(e) => onInputChange(e, "marca")}
           />
         </div>
@@ -282,7 +308,7 @@ export default function ClientTabelaPecas({
             </label>
             <InputNumber
               id="estoque"
-              value={peca.estoque}
+              value={peca.estoque ?? 0}
               onValueChange={(e) => onInputNumberChange(e.value, "estoque")}
             />
           </div>
@@ -295,7 +321,7 @@ export default function ClientTabelaPecas({
             </label>
             <InputNumber
               id="preco_custo"
-              value={peca.preco_custo}
+              value={peca.preco_custo ?? 0}
               onValueChange={(e) => onInputNumberChange(e.value, "preco_custo")}
               mode="currency"
               currency="BRL"
@@ -308,7 +334,7 @@ export default function ClientTabelaPecas({
             </label>
             <InputNumber
               id="preco_venda"
-              value={peca.preco_venda}
+              value={peca.preco_venda ?? 0}
               onValueChange={(e) => onInputNumberChange(e.value, "preco_venda")}
               mode="currency"
               currency="BRL"
@@ -318,7 +344,6 @@ export default function ClientTabelaPecas({
         </div>
       </Dialog>
 
-      {/* --- DIALOG DE CONFIRMAÇÃO UNITÁRIA --- */}
       <Dialog
         visible={dialogDeletarPeca}
         style={{ width: "450px" }}
