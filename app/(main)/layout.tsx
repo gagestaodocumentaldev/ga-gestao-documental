@@ -1,5 +1,6 @@
-import { Metadata } from "next";
-import Layout from "../layout";
+import { Metadata, Viewport } from "next";
+import { Suspense } from "react";
+import Layout from "@/layout/layout";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -10,7 +11,6 @@ export const metadata: Metadata = {
   description:
     "The ultimate collection of design-agnostic, flexible and accessible React UI Components.",
   robots: { index: false, follow: false },
-  viewport: { initialScale: 1, width: "device-width" },
   openGraph: {
     type: "website",
     title: "PrimeReact SAKAI-REACT",
@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+};
+
+export const viewport: Viewport = {
+  initialScale: 1,
+  width: "device-width",
 };
 
 export default function AppLayout({ children }: AppLayoutProps) {
