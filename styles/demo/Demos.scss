@@ -1,5 +1,6 @@
-@import './code.scss';
-@import './BlockViewer.scss';
-@import './TimelineDemo.scss';
+@use "sass:meta";
+@use 'code.scss';
+@use 'BlockViewer.scss';
+@use 'TimelineDemo.scss';
 @import './flags/flags.css';
-@import './badges.scss';
+@include meta.load-css('badges.scss');
