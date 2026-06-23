@@ -1,101 +1,69 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import Form from "next/form";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
-import { classNames } from "primereact/utils";
-import { useState } from "react";
+import { login } from "./auth/actions";
 
 const LoginPage = () => {
-  const [password, setPassword] = useState("");
-  const [checked, setChecked] = useState(false);
-
-  const router = useRouter();
-  const containerClassName = classNames(
-    "surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden filled",
-  );
-
   return (
-    <div className={containerClassName}>
-      <div className="flex flex-column align-items-center justify-content-center">
-        <div className="card ">
-          <div
-            className="w-full surface-card py-8 px-5 sm:px-8"
-            style={{ borderRadius: "53px" }}
-          >
-            <div className="text-center mb-5">
-              <Image
-                src="/assets/image_login.jpg"
-                alt="Logo"
-                width={120}
-                height={120}
-                priority
-                unoptimized
-              />
-              <div className="text-900 text-3xl font-medium mb-3">
-                Bem vindo(a)!
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="email1"
-                className="block text-900 text-xl font-medium mb-2"
-              >
-                Email
-              </label>
-              <InputText
-                id="email1"
-                type="text"
-                placeholder="Email address"
-                className="w-full md:w-30rem mb-5"
-                style={{ padding: "1rem" }}
-              />
-
-              <label
-                htmlFor="password1"
-                className="block text-900 font-medium text-xl mb-2"
-              >
-                Password
-              </label>
-              <Password
-                inputId="password1"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                toggleMask
-                className="w-full mb-5"
-                inputClassName="w-full p-3 md:w-30rem"
-              ></Password>
-
-              <div className="flex align-items-center justify-content-between mb-5 gap-5">
-                <div className="flex align-items-center">
-                  <Checkbox
-                    inputId="rememberme1"
-                    checked={checked}
-                    onChange={(e) => setChecked(e.checked ?? false)}
-                    className="mr-2"
-                  ></Checkbox>
-                  <label htmlFor="rememberme1">Remember me</label>
-                </div>
-                <a
-                  className="font-medium no-underline ml-2 text-right cursor-pointer"
-                  style={{ color: "var(--primary-color)" }}
-                >
-                  Forgot password?
-                </a>
-              </div>
-              <Button
-                label="Sign In"
-                className="w-full p-3 text-xl"
-                onClick={() => router.push("/")}
-              ></Button>
-            </div>
+    <div className="flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden filled">
+      <div className="flex flex-column align-items-center justify-content-center p-5 gap-3 card">
+        <div className="text-center">
+          <Image
+            src="/assets/image_login.jpg"
+            alt="Logo"
+            width={120}
+            height={120}
+            priority
+            unoptimized
+          />
+          <div className="text-900 text-3xl font-medium mb-3">
+            Bem vindo(a)!
           </div>
         </div>
+
+        <Form action={login}>
+          <div className="flex flex-column gap-2 w-full">
+            <label
+              htmlFor="email"
+              className="block text-900 text-xl font-medium mb-2"
+            >
+              Email
+            </label>
+            <InputText
+              id="email"
+              name="email"
+              type="email"
+              placeholder="seu@email.com"
+              className="w-full md:w-30rem mb-5 p-3"
+            />
+
+            <label
+              htmlFor="password"
+              className="block text-900 font-medium text-xl mb-2"
+            >
+              Senha
+            </label>
+            <Password
+              inputId="password"
+              name="password"
+              placeholder="••••••••"
+              feedback={false}
+              toggleMask
+              className="w-full mb-5"
+              inputClassName="w-full p-3 md:w-30rem"
+            ></Password>
+
+            <Button
+              label="Entrar"
+              className="w-full p-3 text-xl"
+              type="submit"
+            ></Button>
+          </div>
+        </Form>
       </div>
     </div>
   );
