@@ -1,6 +1,7 @@
 import TabelaGenerica from "@/components/tabelaGenerica";
 import { Documento } from "@/types/document";
 import { formatDate } from "@/utils/dateUtil";
+import { statusBodyTemplate } from "@/utils/document-status-template";
 
 interface TabelaDashboardProps {
   documentos: Documento[];
@@ -30,6 +31,7 @@ export default function TabelaDashboard({
           field: "status.statusLabel",
           header: "Status",
           sortable: true,
+          body: statusBodyTemplate,
         },
       ]}
     />
