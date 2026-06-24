@@ -71,7 +71,7 @@ export default function SummaryCards({
               className="card mb-0 cursor-pointer transition-all"
               style={{
                 border: "2px solid",
-                borderColor: isActive ? card.hexColor : "",
+                borderColor: isActive ? card.hexColor : "#cdcdcd",
                 opacity: isActive ? 1 : 0.9,
               }}
               onClick={() => handleClick(card.key)}
