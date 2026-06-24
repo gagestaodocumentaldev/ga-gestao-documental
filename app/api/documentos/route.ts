@@ -38,7 +38,11 @@ export async function GET(request: NextRequest) {
     query = query.eq("client_id", client_id);
   }
 
-  const { data, error, count } = await query.range(from, to);
+  query = query.not("data_validade", "is", null);
+
+  const { data, error, count } = await query
+    .order("data_validade", { ascending: false })
+    .range(from, to);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
