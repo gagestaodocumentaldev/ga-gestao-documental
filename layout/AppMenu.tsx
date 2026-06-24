@@ -22,7 +22,7 @@ const AppMenu = () => {
         {
           label: "Categorias",
           icon: "pi pi-fw pi-check-square",
-          to: "/uikit/input",
+          to: "/categorias",
         },
         {
           label: "Tipos de Documentos",
