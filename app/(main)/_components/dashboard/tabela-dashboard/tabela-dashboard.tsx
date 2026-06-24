@@ -26,6 +26,11 @@ export default function TabelaDashboard({
           sortable: true,
           body: (documento: Documento) => formatDate(documento.data_validade),
         },
+        {
+          field: "status.statusLabel",
+          header: "Status",
+          sortable: true,
+        },
       ]}
     />
   );

@@ -1,5 +1,6 @@
 import { Client } from './client';
 import { TipoDocumento } from './tipoDocumento';
+import { DocumentStatus } from './document-status';
 
 export interface Documento {
     id: string;
@@ -12,4 +13,5 @@ export interface Documento {
     file_name?: string;
     created_at?: string;
     updated_at?: string;
+    status?: DocumentStatus;
 }

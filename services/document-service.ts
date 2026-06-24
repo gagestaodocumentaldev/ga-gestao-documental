@@ -1,4 +1,5 @@
 import { Documento } from "@/types/document";
+import { calculateDocumentStatus } from "@/utils/document-status";
 
 type DocumentPayload = {
   client_id?: string;
@@ -21,7 +22,12 @@ export async function pesquisarDocumentos(
   const res = await fetch(`/api/documents${query}`);
   if (!res.ok) throw new Error("Erro ao buscar documentos");
   const data = await res.json();
-  return data.documents ?? [];
+  const documents: Documento[] = data.documents ?? [];
+
+  return documents.map((doc) => ({
+    ...doc,
+    status: calculateDocumentStatus(doc.data_validade),
+  }));
 }
 
 export async function criarDocumento(doc: DocumentPayload): Promise<Documento> {
