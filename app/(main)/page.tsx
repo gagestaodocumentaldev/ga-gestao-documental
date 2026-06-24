@@ -1,6 +1,6 @@
 "use client";
 
-import { pesquisarDocumentos } from "@/services/document-service";
+import { pesquisarDocumentos } from "@/services/documento-service";
 import { Documento } from "@/types/document";
 
 import { useEffect, useState } from "react";
