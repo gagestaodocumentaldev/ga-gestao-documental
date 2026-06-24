@@ -324,6 +324,7 @@ export default function DialogDocumentosCliente({
                   field.onChange(e.value ? toISODate(e.value as Date) : "")
                 }
                 dateFormat="dd/mm/yy"
+                mask="99/99/9999"
                 readOnlyInput={false}
                 showIcon
                 className="w-full"
@@ -347,6 +348,7 @@ export default function DialogDocumentosCliente({
                   field.onChange(e.value ? toISODate(e.value as Date) : "")
                 }
                 dateFormat="dd/mm/yy"
+                mask="99/99/9999"
                 readOnlyInput={false}
                 showIcon
                 className="w-full"
