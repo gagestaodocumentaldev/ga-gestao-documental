@@ -82,7 +82,7 @@ export default function SummaryCards({
                     {card.label}
                   </span>
                   <div
-                    className="font-medium text-xl"
+                    className="font-medium text-2xl"
                     style={{ color: card.hexColor }}
                   >
                     {count}
