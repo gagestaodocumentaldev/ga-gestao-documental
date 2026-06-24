@@ -19,7 +19,7 @@ export async function pesquisarDocumentos(
   if (termo) params.set("termo", termo);
   if (clientId) params.set("client_id", clientId);
   const query = params.toString() ? `?${params.toString()}` : "";
-  const res = await fetch(`/api/documents${query}`);
+  const res = await fetch(`/api/documentos${query}`);
   if (!res.ok) throw new Error("Erro ao buscar documentos");
   const data = await res.json();
   const documents: Documento[] = data.documents ?? [];
@@ -31,7 +31,7 @@ export async function pesquisarDocumentos(
 }
 
 export async function criarDocumento(doc: DocumentPayload): Promise<Documento> {
-  const res = await fetch("/api/documents", {
+  const res = await fetch("/api/documentos", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(doc),
@@ -47,7 +47,7 @@ export async function atualizarDocumento(
   id: string,
   doc: DocumentPayload,
 ): Promise<Documento> {
-  const res = await fetch(`/api/documents/${id}`, {
+  const res = await fetch(`/api/documentos/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(doc),
@@ -60,7 +60,7 @@ export async function atualizarDocumento(
 }
 
 export async function deletarDocumento(id: string): Promise<void> {
-  const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+  const res = await fetch(`/api/documentos/${id}`, { method: "DELETE" });
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error || "Erro ao excluir documento");

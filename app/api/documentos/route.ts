@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("documents")
-    .select("*, client:clients(*), tipo:tipos_documentos(*)", { count: "exact" });
+    .select("*, client:clients(*), tipo:tipos_documentos(*)", {
+      count: "exact",
+    });
 
   if (termo) {
     query = query.ilike("numero", `%${termo}%`);
