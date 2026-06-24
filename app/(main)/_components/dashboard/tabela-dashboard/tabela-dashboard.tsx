@@ -1,7 +1,7 @@
 import TabelaGenerica from "@/components/tabelaGenerica";
 import { Documento } from "@/types/document";
 import { formatDate } from "@/utils/dateUtil";
-import { statusBodyTemplate } from "@/utils/document-status-template";
+import { statusBodyTemplate } from "@/app/(main)/_components/dashboard/tabela-dashboard/document-status-template";
 
 interface TabelaDashboardProps {
   documentos: Documento[];
