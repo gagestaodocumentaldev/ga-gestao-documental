@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm, DefaultValues } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
+import React from "react";
 
 interface SalvarParams<T extends { id: number | string }> {
   criarFn: (item: T) => Promise<unknown>;
@@ -17,9 +18,14 @@ interface DeletarParams<T extends { id: number | string }> {
   mensagem?: string;
 }
 
+interface UseCrudOptions<T> {
+  acoesExtras?: (rowData: T) => React.ReactNode;
+}
+
 export function useCrud<T extends { id: number | string }>(
   itemVazio: T,
   fetchFn?: () => Promise<T[]>,
+  options?: UseCrudOptions<T>,
 ) {
   const router = useRouter();
   const toast = useRef<Toast>(null);
@@ -83,6 +89,7 @@ export function useCrud<T extends { id: number | string }>(
         severity="warning"
         onClick={() => confirmarDeletar(rowData)}
       />
+      {options?.acoesExtras?.(rowData)}
     </div>
   );
 
