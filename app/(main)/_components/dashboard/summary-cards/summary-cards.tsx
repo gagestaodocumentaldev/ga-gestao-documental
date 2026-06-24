@@ -20,41 +20,33 @@ const cards = [
     key: "expired" as StatusType,
     label: "Vencidos",
     description: "Documentos já expirados",
-    bgIcon: "bg-red-100",
-    textIcon: "text-red-500",
+    severity: "danger",
+    hexColor: "#ef4444",
     icon: "pi pi-times-circle",
-    countColor: "text-red-600",
-    highlightClass: "border-red-400",
   },
   {
     key: "critical" as StatusType,
     label: "Críticos",
     description: "Vencem em até 30 dias",
-    bgIcon: "bg-orange-100",
-    textIcon: "text-orange-500",
+    severity: "warning",
+    hexColor: "#f97316",
     icon: "pi pi-exclamation-circle",
-    countColor: "text-orange-600",
-    highlightClass: "border-orange-400",
   },
   {
     key: "warning" as StatusType,
     label: "A vencer",
     description: "Vencem em até 90 dias",
-    bgIcon: "bg-yellow-100",
-    textIcon: "text-yellow-500",
+    severity: "info",
+    hexColor: "#0ea5e9",
     icon: "pi pi-calendar",
-    countColor: "text-yellow-600",
-    highlightClass: "border-yellow-400",
   },
   {
     key: "ok" as StatusType,
     label: "Válidos",
     description: "Dentro do prazo",
-    bgIcon: "bg-green-100",
-    textIcon: "text-green-500",
+    severity: "success",
+    hexColor: "#22c55e",
     icon: "pi pi-check-circle",
-    countColor: "text-green-600",
-    highlightClass: "border-green-400",
   },
 ];
 
@@ -76,26 +68,31 @@ export default function SummaryCards({
         return (
           <div key={card.key} className="col-12 lg:col-6 xl:col-3">
             <div
-              className={`card mb-0 cursor-pointer transition-all border-2 ${
-                isActive ? card.highlightClass : "border-transparent"
-              }`}
-              style={{ opacity: isActive ? 1 : 0.9 }}
+              className="card mb-0 cursor-pointer transition-all"
+              style={{
+                border: "2px solid",
+                borderColor: isActive ? card.hexColor : "",
+                opacity: isActive ? 1 : 0.9,
+              }}
               onClick={() => handleClick(card.key)}
             >
-              <div className="flex justify-content-between mb-3">
+              <div className="flex justify-content-between mb-3 ">
                 <div>
                   <span className="block text-500 font-medium mb-3">
                     {card.label}
                   </span>
-                  <div className={`font-medium text-xl ${card.countColor}`}>
+                  <div
+                    className="font-medium text-xl"
+                    style={{ color: card.hexColor }}
+                  >
                     {count}
                   </div>
                 </div>
                 <div
-                  className={`flex align-items-center justify-content-center ${card.bgIcon} border-round`}
+                  className={`p-tag p-tag-${card.severity} rounded-2xl flex items-center justify-center`}
                   style={{ width: "2.5rem", height: "2.5rem" }}
                 >
-                  <i className={`${card.icon} ${card.textIcon} text-xl`} />
+                  <i className={`${card.icon} text-xl`} />
                 </div>
               </div>
               <span className="text-500 text-sm">{card.description}</span>
