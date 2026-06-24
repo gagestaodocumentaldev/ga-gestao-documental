@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { AppTopbarRef } from "@/types";
 import Link from "next/link";
 import { classNames } from "primereact/utils";
 import { forwardRef, useContext, useImperativeHandle, useRef } from "react";
 import { LayoutContext } from "./context/layoutcontext";
 import Image from "next/image";
+import { AppTopbarRef } from "@/types/layout";
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
   const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } =

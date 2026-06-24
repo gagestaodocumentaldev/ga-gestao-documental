@@ -17,7 +17,7 @@ const AppMenu = () => {
         {
           label: "Clientes",
           icon: "pi pi-fw pi-id-card",
-          to: "/uikit/formlayout",
+          to: "/clientes",
         },
         {
           label: "Categorias",
