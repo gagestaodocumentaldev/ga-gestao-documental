@@ -1,7 +1,7 @@
 import { Client } from './client';
 import { TipoDocumento } from './tipoDocumento';
 
-export interface Document {
+export interface Documento {
     id: string;
     client: Client;
     numero: string;

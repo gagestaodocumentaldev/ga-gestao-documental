@@ -1,8 +1,10 @@
 import TabelaGenerica from "@/components/tabelaGenerica";
+import { Documento } from "@/types/document";
+import { formatDate } from "@/utils/dateUtil";
 import { Column } from "primereact/column";
 
 interface TabelaDashboardProps {
-  documentos: Document[];
+  documentos: Documento[];
   titulo: string;
 }
 
@@ -12,10 +14,20 @@ export default function TabelaDashboard({
 }: TabelaDashboardProps) {
   return (
     <TabelaGenerica value={documentos} titulo={titulo}>
-      <Column field="codigo" header="Código" sortable />
-      <Column field="descricao" header="Descrição" sortable />
+      <Column field="client.nome" header="Nome Cliente" sortable />
+      <Column field="client.cnpj" header="CNPJ" sortable />
+      <Column field="numero" header="Documento" sortable />
+      <Column field="tipo.descricao" header="Tipo Documento" sortable />
+      <Column field="tipo.descricao" header="Tipo Documento" sortable />
+      <Column
+        header="Data Validade"
+        sortable
+        body={(documento: Documento) => formatDate(documento.data_validade)}
+      />
+
+      {/* <Column field="descricao" header="Descrição" sortable />
       <Column field="marca" header="Marca" sortable />
-      <Column field="estoque" header="Estoque" sortable />
+      <Column field="estoque" header="Estoque" sortable /> */}
     </TabelaGenerica>
   );
 }
