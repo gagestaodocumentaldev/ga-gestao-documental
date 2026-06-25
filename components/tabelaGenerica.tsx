@@ -35,6 +35,8 @@ interface TabelaGenericaProps<T> {
   selection?: any;
   onSelectionChange?: (e: any) => void;
   headerActions?: ReactNode;
+  selectionMode?: "single" | "multiple";
+  onRowSelect?: (row: T) => void;
 }
 
 function getNestedValue(obj: any, path: string): any {
@@ -52,6 +54,8 @@ const TabelaGenerica = forwardRef(
       selection,
       onSelectionChange,
       headerActions,
+      selectionMode,
+      onRowSelect,
     }: TabelaGenericaProps<T>,
     ref: any,
   ) => {
@@ -126,6 +130,12 @@ const TabelaGenerica = forwardRef(
           dataKey="id"
           selection={selection}
           onSelectionChange={onSelectionChange}
+          {...(selectionMode && {
+            selectionMode,
+            cellSelection: false,
+            metaKeySelection: false,
+            onRowSelect: onRowSelect ? (e: any) => onRowSelect(e.data) : undefined,
+          })}
           removableSort
           sortMode="multiple"
           showGridlines
