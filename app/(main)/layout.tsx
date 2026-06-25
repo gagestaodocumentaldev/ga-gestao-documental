@@ -1,7 +1,7 @@
 import { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import Layout from "@/layout/layout";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/get-current-user";
 import { UserProvider } from "@/layout/context/usercontext";
 
 interface AppLayoutProps {
@@ -31,26 +31,7 @@ export const viewport: Viewport = {
 };
 
 export default async function AppLayout({ children }: AppLayoutProps) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let userData = { nome: "", email: user?.email ?? "", perfil: "" };
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("nome, perfil")
-      .eq("id", user.id)
-      .single();
-
-    userData = {
-      nome: profile?.nome ?? "",
-      email: user?.email ?? "",
-      perfil: profile?.perfil ?? "",
-    };
-  }
+  const userData = await getCurrentUser();
 
   return (
     <Suspense fallback={null}>
