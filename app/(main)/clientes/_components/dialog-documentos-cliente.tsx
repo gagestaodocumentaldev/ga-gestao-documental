@@ -8,6 +8,7 @@ import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { InputText } from "primereact/inputtext";
+import { ProgressBar } from "primereact/progressbar";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
@@ -79,6 +80,7 @@ export default function DialogDocumentosCliente({
   } | null>(null);
   const [docIdEditando, setDocIdEditando] = useState<string>("");
   const [removendoArquivo, setRemovendoArquivo] = useState(false);
+  const [uploadando, setUploadando] = useState(false);
 
   const {
     control,
@@ -169,6 +171,7 @@ export default function DialogDocumentosCliente({
 
   const onSalvar = async (data: DocumentoForm) => {
     setSalvando(true);
+    const isEdicao = !!data.id;
     try {
       const payload = {
         numero: data.numero,
@@ -179,35 +182,29 @@ export default function DialogDocumentosCliente({
 
       let docId: string;
 
-      if (data.id) {
+      if (isEdicao) {
         await atualizarDocumento(data.id, payload);
         docId = data.id;
-        toast.current?.show({
-          severity: "success",
-          summary: "Sucesso",
-          detail: "Documento atualizado",
-          life: 3000,
-        });
       } else {
         const novo = await criarDocumento({ ...payload, client_id: clienteId });
         docId = novo.id;
-        toast.current?.show({
-          severity: "success",
-          summary: "Sucesso",
-          detail: "Documento criado",
-          life: 3000,
-        });
       }
 
       if (pendingFile) {
-        await uploadArquivoDocumento(docId, pendingFile);
-        toast.current?.show({
-          severity: "success",
-          summary: "Sucesso",
-          detail: "Arquivo enviado",
-          life: 3000,
-        });
+        setUploadando(true);
+        try {
+          await uploadArquivoDocumento(docId, pendingFile);
+        } finally {
+          setUploadando(false);
+        }
       }
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: isEdicao ? "Documento atualizado com sucesso" : "Documento criado com sucesso",
+        life: 3000,
+      });
 
       fecharForm();
       recarregar();
@@ -483,8 +480,8 @@ export default function DialogDocumentosCliente({
             maxFileSize={30 * 1024 * 1024}
             auto={false}
             chooseLabel="Selecionar arquivo"
-            uploadLabel="Enviar"
             cancelLabel="Cancelar"
+            uploadOptions={{ className: "hidden" }}
             onSelect={(e: FileUploadSelectEvent) => setPendingFile(e.files[0])}
             onClear={() => setPendingFile(null)}
             onRemove={() => setPendingFile(null)}
@@ -494,6 +491,9 @@ export default function DialogDocumentosCliente({
               </p>
             }
           />
+          {uploadando && (
+            <ProgressBar mode="indeterminate" className="mt-2" style={{ height: "4px" }} />
+          )}
         </div>
       </CrudDialog>
 
