@@ -6,6 +6,8 @@ import { forwardRef, useContext, useImperativeHandle, useRef } from "react";
 import { LayoutContext } from "./context/layoutcontext";
 import Image from "next/image";
 import { AppTopbarRef } from "@/types/layout";
+import { Menu } from "primereact/menu";
+import { logout } from "@/app/(auth)/login/auth/actions";
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
   const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } =
@@ -13,12 +15,21 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
   const menubuttonRef = useRef(null);
   const topbarmenuRef = useRef(null);
   const topbarmenubuttonRef = useRef(null);
+  const menuRef = useRef<Menu>(null);
 
   useImperativeHandle(ref, () => ({
     menubutton: menubuttonRef.current,
     topbarmenu: topbarmenuRef.current,
     topbarmenubutton: topbarmenubuttonRef.current,
   }));
+
+  const menuItems = [
+    {
+      label: "Sair",
+      icon: "pi pi-sign-out",
+      command: () => logout(),
+    },
+  ];
 
   return (
     <div className="layout-topbar">
@@ -54,26 +65,21 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         <i className="pi pi-ellipsis-v" />
       </button>
 
+      <Menu ref={menuRef} model={menuItems} popup />
       <div
         ref={topbarmenuRef}
         className={classNames("layout-topbar-menu", {
           "layout-topbar-menu-mobile-active": layoutState.profileSidebarVisible,
         })}
       >
-        <button type="button" className="p-link layout-topbar-button">
-          <i className="pi pi-calendar"></i>
-          <span>Calendar</span>
-        </button>
-        <button type="button" className="p-link layout-topbar-button">
+        <button
+          type="button"
+          className="p-link layout-topbar-button"
+          onClick={(e) => menuRef.current?.toggle(e)}
+        >
           <i className="pi pi-user"></i>
           <span>Profile</span>
         </button>
-        <Link href="/documentation">
-          <button type="button" className="p-link layout-topbar-button">
-            <i className="pi pi-cog"></i>
-            <span>Settings</span>
-          </button>
-        </Link>
       </div>
     </div>
   );
