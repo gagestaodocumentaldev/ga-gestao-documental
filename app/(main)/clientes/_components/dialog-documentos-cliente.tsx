@@ -20,7 +20,7 @@ import {
   deletarDocumento,
   pesquisarDocumentos,
 } from "@/services/documento-service";
-import { pesquisarTiposDocumentos } from "@/services/tipodocumento-service";
+import { pesquisarTiposDocumentosDisponiveis } from "@/services/tipodocumento-service";
 import { Documento } from "@/types/entidades-banco/documento";
 import { TipoDocumento } from "@/types/entidades-banco/tipoDocumento";
 import { formatDate } from "@/utils/dateUtil";
@@ -85,16 +85,13 @@ export default function DialogDocumentosCliente({
     recarregar();
   }, [clienteId]);
 
-  useEffect(() => {
-    pesquisarTiposDocumentos().then(setTipos).catch(console.error);
-  }, []);
-
-  const abrirNovo = () => {
+  const abrirNovo = async () => {
     reset(documentoVazio);
+    pesquisarTiposDocumentosDisponiveis(clienteId).then(setTipos).catch(console.error);
     setDialogFormAberto(true);
   };
 
-  const editar = (doc: Documento) => {
+  const editar = async (doc: Documento) => {
     reset({
       id: doc.id,
       numero: doc.numero,
@@ -102,6 +99,7 @@ export default function DialogDocumentosCliente({
       data_emissao: doc.data_emissao ?? "",
       data_validade: doc.data_validade ?? "",
     });
+    pesquisarTiposDocumentosDisponiveis(clienteId, doc.id).then(setTipos).catch(console.error);
     setDialogFormAberto(true);
   };
 

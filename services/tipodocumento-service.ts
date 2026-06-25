@@ -7,6 +7,18 @@ export async function pesquisarTiposDocumentos(): Promise<TipoDocumento[]> {
   return data.tiposDocumentos ?? [];
 }
 
+export async function pesquisarTiposDocumentosDisponiveis(
+  clientId: string,
+  excluirDocumentoId?: string,
+): Promise<TipoDocumento[]> {
+  const params = new URLSearchParams({ client_id: clientId });
+  if (excluirDocumentoId) params.set("excluir_documento_id", excluirDocumentoId);
+  const res = await fetch(`/api/tipos-documentos/disponiveis?${params}`);
+  if (!res.ok) throw new Error("Erro ao buscar tipos de documento disponíveis");
+  const data = await res.json();
+  return data.tiposDocumentos ?? [];
+}
+
 export async function criarTipoDocumento(
   tipoDocumento: Partial<TipoDocumento>,
 ): Promise<TipoDocumento> {
