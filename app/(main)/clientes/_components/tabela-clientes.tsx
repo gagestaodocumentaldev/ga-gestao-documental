@@ -1,29 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Controller } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { InputMask } from "primereact/inputmask";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
+import { useEffect, useState } from "react";
+import { Controller } from "react-hook-form";
 
-import TabelaGenerica from "../../../../components/tabelaGenerica";
-import CrudDialog from "../../../../components/crudDialog";
-import ConfirmarExclusaoDialog from "../../../../components/confirmarExclusaoDialog";
-import DialogDocumentosCliente from "./dialog-documentos-cliente";
-import { useCrud } from "../../../../hooks/useCrud";
-import { Categoria } from "@/types/entidades-banco/categoria";
-import { Client } from "@/types/entidades-banco/client";
 import { pesquisarCategorias } from "@/services/categoria-service";
 import {
-  ClienteForm,
-  pesquisarClientes,
-  criarCliente,
   atualizarCliente,
+  ClienteForm,
+  criarCliente,
   deletarCliente as deletarClienteService,
+  pesquisarClientes,
 } from "@/services/cliente-service";
+import { Categoria } from "@/types/entidades-banco/categoria";
+import { Client } from "@/types/entidades-banco/client";
+import ConfirmarExclusaoDialog from "../../../../components/confirmarExclusaoDialog";
+import CrudDialog from "../../../../components/crudDialog";
+import TabelaGenerica from "../../../../components/tabelaGenerica";
+import { useCrud } from "../../../../hooks/useCrud";
+import DialogDocumentosCliente from "./dialog-documentos-cliente";
 
 interface TabelaClientesProps {
   titulo: string;

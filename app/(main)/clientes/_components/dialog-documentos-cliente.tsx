@@ -1,35 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { InputText } from "primereact/inputtext";
-import { Panel } from "primereact/panel";
 import { ProgressBar } from "primereact/progressbar";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
+import { Controller } from "react-hook-form";
 
+import { useDocumentosCliente } from "@/hooks/useDocumentosCliente";
+import { Documento } from "@/types/entidades-banco/documento";
+import { formatDate } from "@/utils/dateUtil";
 import ConfirmarExclusaoDialog from "../../../../components/confirmarExclusaoDialog";
 import CrudDialog from "../../../../components/crudDialog";
 import TabelaGenerica from "../../../../components/tabelaGenerica";
 import { statusBodyTemplate } from "../../_components/dashboard/tabela-dashboard/document-status-template";
-import {
-  atualizarDocumento,
-  criarDocumento,
-  deletarArquivoDocumento,
-  deletarDocumento,
-  pesquisarDocumentos,
-  uploadArquivoDocumento,
-} from "@/services/documento-service";
-import { pesquisarTiposDocumentosDisponiveis } from "@/services/tipodocumento-service";
-import { Documento } from "@/types/entidades-banco/documento";
-import { TipoDocumento } from "@/types/entidades-banco/tipoDocumento";
-import { formatDate } from "@/utils/dateUtil";
+import PainelCoberturaDocumental from "./painel-cobertura-documental";
 
 interface Props {
   clienteId: string;
@@ -38,24 +28,7 @@ interface Props {
   onHide: () => void;
 }
 
-interface DocumentoForm {
-  id: string;
-  numero: string;
-  tipo: string;
-  data_emissao: string;
-  data_validade: string;
-}
-
-const documentoVazio: DocumentoForm = {
-  id: "",
-  numero: "",
-  tipo: "",
-  data_emissao: "",
-  data_validade: "",
-};
-
 const toISODate = (d: Date) => d.toLocaleDateString("sv");
-
 const toDate = (iso?: string) => (iso ? new Date(iso + "T00:00:00") : null);
 
 export default function DialogDocumentosCliente({
@@ -64,199 +37,34 @@ export default function DialogDocumentosCliente({
   visible,
   onHide,
 }: Props) {
-  const toast = useRef<Toast>(null);
-  const fileUploadRef = useRef<FileUpload>(null);
-  const [documentos, setDocumentos] = useState<Documento[]>([]);
-  const [tipos, setTipos] = useState<TipoDocumento[]>([]);
-  const [dialogFormAberto, setDialogFormAberto] = useState(false);
-  const [dialogDeletar, setDialogDeletar] = useState(false);
-  const [documentoSelecionado, setDocumentoSelecionado] =
-    useState<Documento | null>(null);
-  const [salvando, setSalvando] = useState(false);
-  const [deletando, setDeletando] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [arquivoAtual, setArquivoAtual] = useState<{
-    url: string;
-    nome: string;
-  } | null>(null);
-  const [docIdEditando, setDocIdEditando] = useState<string>("");
-  const [removendoArquivo, setRemovendoArquivo] = useState(false);
-  const [uploadando, setUploadando] = useState(false);
-  const [tiposDisponiveis, setTiposDisponiveis] = useState<TipoDocumento[]>([]);
-  const [painelExpandido, setPainelExpandido] = useState(false);
-
   const {
+    toast,
+    fileUploadRef,
+    documentos,
+    tipos,
+    tiposDisponiveis,
+    dialogFormAberto,
+    dialogDeletar,
+    setDialogDeletar,
+    documentoSelecionado,
+    salvando,
+    deletando,
+    removendoArquivo,
+    uploadando,
+    pendingFile,
+    setPendingFile,
+    arquivoAtual,
     control,
     handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<DocumentoForm>({ defaultValues: documentoVazio });
-
-  const recarregarTiposDisponiveis = () =>
-    pesquisarTiposDocumentosDisponiveis(clienteId)
-      .then(setTiposDisponiveis)
-      .catch(console.error);
-
-  const recarregar = () => {
-    pesquisarDocumentos(undefined, clienteId, true)
-      .then(setDocumentos)
-      .catch(console.error);
-    recarregarTiposDisponiveis();
-  };
-
-  useEffect(() => {
-    recarregar();
-  }, [clienteId]);
-
-  const abrirNovo = async () => {
-    reset(documentoVazio);
-    setDocIdEditando("");
-    setArquivoAtual(null);
-    setPendingFile(null);
-    pesquisarTiposDocumentosDisponiveis(clienteId)
-      .then(setTipos)
-      .catch(console.error);
-    setDialogFormAberto(true);
-  };
-
-  const editar = async (doc: Documento) => {
-    reset({
-      id: doc.id,
-      numero: doc.numero,
-      tipo: doc.tipo?.id ?? "",
-      data_emissao: doc.data_emissao ?? "",
-      data_validade: doc.data_validade ?? "",
-    });
-    setDocIdEditando(doc.id);
-    setArquivoAtual(
-      doc.file_url && doc.file_name
-        ? { url: doc.file_url, nome: doc.file_name }
-        : null,
-    );
-    setPendingFile(null);
-    pesquisarTiposDocumentosDisponiveis(clienteId, doc.id)
-      .then(setTipos)
-      .catch(console.error);
-    setDialogFormAberto(true);
-  };
-
-  const fecharForm = () => {
-    reset(documentoVazio);
-    setDocIdEditando("");
-    setArquivoAtual(null);
-    setPendingFile(null);
-    fileUploadRef.current?.clear();
-    setDialogFormAberto(false);
-  };
-
-  const confirmarDeletar = (doc: Documento) => {
-    setDocumentoSelecionado(doc);
-    setDialogDeletar(true);
-  };
-
-  const removerArquivo = async () => {
-    if (!docIdEditando) return;
-    setRemovendoArquivo(true);
-    try {
-      await deletarArquivoDocumento(docIdEditando);
-      setArquivoAtual(null);
-      recarregar();
-      toast.current?.show({
-        severity: "success",
-        summary: "Sucesso",
-        detail: "Arquivo removido",
-        life: 3000,
-      });
-    } catch (err) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Erro",
-        detail: err instanceof Error ? err.message : "Erro desconhecido",
-        life: 3000,
-      });
-    } finally {
-      setRemovendoArquivo(false);
-    }
-  };
-
-  const onSalvar = async (data: DocumentoForm) => {
-    setSalvando(true);
-    const isEdicao = !!data.id;
-    try {
-      const payload = {
-        numero: data.numero,
-        tipo: data.tipo || undefined,
-        data_emissao: data.data_emissao || undefined,
-        data_validade: data.data_validade || undefined,
-      };
-
-      let docId: string;
-
-      if (isEdicao) {
-        await atualizarDocumento(data.id, payload);
-        docId = data.id;
-      } else {
-        const novo = await criarDocumento({ ...payload, client_id: clienteId });
-        docId = novo.id;
-      }
-
-      if (pendingFile) {
-        setUploadando(true);
-        try {
-          await uploadArquivoDocumento(docId, pendingFile);
-        } finally {
-          setUploadando(false);
-        }
-      }
-
-      toast.current?.show({
-        severity: "success",
-        summary: "Sucesso",
-        detail: isEdicao
-          ? "Documento atualizado com sucesso"
-          : "Documento criado com sucesso",
-        life: 3000,
-      });
-
-      fecharForm();
-      recarregar();
-    } catch (err) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Erro",
-        detail: err instanceof Error ? err.message : "Erro desconhecido",
-        life: 3000,
-      });
-    } finally {
-      setSalvando(false);
-    }
-  };
-
-  const onDeletar = async () => {
-    if (!documentoSelecionado) return;
-    setDeletando(true);
-    try {
-      await deletarDocumento(documentoSelecionado.id);
-      toast.current?.show({
-        severity: "success",
-        summary: "Sucesso",
-        detail: "Documento excluído",
-        life: 3000,
-      });
-      setDialogDeletar(false);
-      setDocumentoSelecionado(null);
-      recarregar();
-    } catch (err) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Erro",
-        detail: err instanceof Error ? err.message : "Erro desconhecido",
-        life: 3000,
-      });
-    } finally {
-      setDeletando(false);
-    }
-  };
+    errors,
+    abrirNovo,
+    editar,
+    fecharForm,
+    confirmarDeletar,
+    removerArquivo,
+    onSalvar,
+    onDeletar,
+  } = useDocumentosCliente(clienteId);
 
   const colunaAcoes = (doc: Documento) => (
     <div className="flex gap-2">
@@ -305,84 +113,10 @@ export default function DialogDocumentosCliente({
         modal
         onHide={onHide}
       >
-        {(() => {
-          const LIMIT = 10;
-          const tiposPreenchidos = documentos
-            .map((d) => d.tipo)
-            .filter((t): t is TipoDocumento => !!t);
-          const preenchidosVisiveis = painelExpandido
-            ? tiposPreenchidos
-            : tiposPreenchidos.slice(0, LIMIT);
-          const faltandoVisiveis = painelExpandido
-            ? tiposDisponiveis
-            : tiposDisponiveis.slice(0, LIMIT);
-          const totalOculto =
-            Math.max(0, tiposPreenchidos.length - LIMIT) +
-            Math.max(0, tiposDisponiveis.length - LIMIT);
-          const temMais = totalOculto > 0;
-
-          return (
-            <Panel header="Cobertura Documental" toggleable className="mb-3">
-              <div className="grid">
-                <div className="col-6">
-                  <span className="font-bold text-sm">
-                    Preenchidos ({tiposPreenchidos.length})
-                  </span>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {preenchidosVisiveis.map((t) => (
-                      <Tag key={t.id} value={t.descricao} severity="success" />
-                    ))}
-                    {tiposPreenchidos.length === 0 && (
-                      <span className="text-color-secondary text-sm">
-                        Nenhum
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="col-6">
-                  <span className="font-bold text-sm">
-                    Faltandos ({tiposDisponiveis.length})
-                  </span>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {faltandoVisiveis.map((t) => (
-                      <Tag
-                        key={t.id}
-                        value={t.descricao}
-                        style={{ background: "#808080" }}
-                      />
-                    ))}
-                    {tiposDisponiveis.length === 0 && (
-                      <span className="text-color-secondary text-sm">
-                        Nenhum
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {temMais && (
-                <div className="mt-2">
-                  <Button
-                    label={
-                      painelExpandido
-                        ? "Ver menos"
-                        : `Ver mais +${totalOculto} tipos`
-                    }
-                    link
-                    icon={
-                      painelExpandido
-                        ? "pi pi-chevron-up"
-                        : "pi pi-chevron-down"
-                    }
-                    iconPos="right"
-                    type="button"
-                    onClick={() => setPainelExpandido((p) => !p)}
-                    className="p-0 text-sm"
-                  />
-                </div>
-              )}
-            </Panel>
-          );
-        })()}
+        <PainelCoberturaDocumental
+          documentos={documentos}
+          tiposDisponiveis={tiposDisponiveis}
+        />
 
         <TabelaGenerica
           value={documentos}
