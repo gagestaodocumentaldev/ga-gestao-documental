@@ -19,15 +19,17 @@ export async function GET() {
 
   const profilesMap = new Map(profiles?.map((p) => [p.id, p]));
 
-  const usuarios: UsuarioForm[] = authData.users.map((u) => {
-    const profile = profilesMap.get(u.id);
-    return {
-      id: u.id,
-      email: u.email ?? "",
-      nome: profile?.nome ?? "",
-      perfil: (profile?.perfil ?? "viewer") as UsuarioForm["perfil"],
-    };
-  });
+  const usuarios: UsuarioForm[] = authData.users
+    .map((u) => {
+      const profile = profilesMap.get(u.id);
+      return {
+        id: u.id,
+        email: u.email ?? "",
+        nome: profile?.nome ?? "",
+        perfil: (profile?.perfil ?? "viewer") as UsuarioForm["perfil"],
+      };
+    })
+    .filter((u) => u.perfil !== "desenvolvedor");
 
   return NextResponse.json({ usuarios });
 }
