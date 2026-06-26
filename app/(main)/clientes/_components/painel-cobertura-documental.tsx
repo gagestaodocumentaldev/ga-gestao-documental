@@ -33,8 +33,20 @@ export default function PainelCoberturaDocumental({
   }
 
   async function copyAsPlain() {
+    const text = generatePlainText();
     try {
-      await navigator.clipboard.writeText(generatePlainText());
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
       toast.current?.show({
         severity: "success",
         summary: "Copiado!",
@@ -82,6 +94,7 @@ export default function PainelCoberturaDocumental({
                 severity="secondary"
                 type="button"
                 onClick={copyAsPlain}
+                style={{ background: "#f0f0f0" }}
               />
               {options.togglerElement}
             </div>
