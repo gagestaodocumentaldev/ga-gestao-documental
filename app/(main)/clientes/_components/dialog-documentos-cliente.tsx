@@ -130,7 +130,14 @@ export default function DialogDocumentosCliente({
             />
           }
           columns={[
-            { field: "numero", header: "Número do Documento", sortable: true },
+            {
+              header: "Número do Documento",
+              sortable: true,
+              body: (row: Documento) =>
+                row.numero || (
+                  <span className="text-color-secondary">—</span>
+                ),
+            },
             {
               header: "Tipo do Documento",
               sortable: false,
@@ -139,7 +146,24 @@ export default function DialogDocumentosCliente({
             {
               header: "Data Emissão",
               sortable: false,
-              body: (row: Documento) => formatDate(row.data_emissao),
+              body: (row: Documento) =>
+                formatDate(row.data_emissao) || (
+                  <span className="text-color-secondary">—</span>
+                ),
+            },
+            {
+              header: "Data de Validade",
+              sortable: false,
+              body: (row: Documento) =>
+                row.data_validade ? (
+                  formatDate(row.data_validade)
+                ) : (
+                  <Tag
+                    severity="secondary"
+                    icon="pi pi-question-circle"
+                    value="Indefinida"
+                  />
+                ),
             },
             {
               header: "Status",
