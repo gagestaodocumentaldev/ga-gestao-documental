@@ -7,6 +7,7 @@ Sistema de gestão documental empresarial focado em **controle de validade de do
 - **Clean code obrigatório**: sem duplicação, sem lógica desnecessária, nomes descritivos
 - **Simplicidade**: preferir a solução mais simples que resolve o problema; programador deve operar sem dificuldade
 - **Não duplicar**: antes de criar qualquer função, componente ou utilitário, verificar se já existe algo equivalente no projeto
+- **Utilitários**: a pasta `utils/` contém helpers reutilizáveis (ex: `dateUtil.ts` para formatação de datas). Sempre verificar e usar antes de reescrever lógica equivalente inline
 - **Componentes UI**: usar exclusivamente **PrimeReact** para todos os componentes visuais (inputs, botões, tabelas, dialogs, toasts, etc.)
 - **Next.js**: usar funcionalidades exclusivas do Next.js 16 sempre que aplicável (Server Components, Server Actions, Route Handlers, revalidatePath, cache, etc.)
 - **Sem comentários óbvios**: só comentar o "porquê" quando não for evidente pelo código
