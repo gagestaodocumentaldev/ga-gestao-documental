@@ -97,7 +97,7 @@ const TabelaGenerica = forwardRef(
     const header = (
       <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
         <h1 className="text-2xl font-bold">{titulo}</h1>
-        <div className="flex align-items-center gap-3">
+        <div className="flex flex-column sm:flex-row md:align-items-center gap-3 w-full md:w-auto">
           {headerActions}
           <IconField iconPosition="left">
             <InputIcon className="pi pi-search" />
@@ -105,6 +105,7 @@ const TabelaGenerica = forwardRef(
               value={globalFilterValue}
               onChange={onGlobalFilterChange}
               placeholder="Busca geral..."
+              className="w-full sm:w-auto"
             />
           </IconField>
         </div>
@@ -139,7 +140,9 @@ const TabelaGenerica = forwardRef(
             selectionMode,
             cellSelection: false,
             metaKeySelection: false,
-            onRowSelect: onRowSelect ? (e: any) => onRowSelect(e.data) : undefined,
+            onRowSelect: onRowSelect
+              ? (e: any) => onRowSelect(e.data)
+              : undefined,
           })}
           removableSort
           sortMode="multiple"
@@ -169,5 +172,7 @@ const TabelaGenerica = forwardRef(
 TabelaGenerica.displayName = "TabelaGenerica";
 
 export default TabelaGenerica as <T extends Record<string, any>>(
-  props: TabelaGenericaProps<T> & { ref?: React.Ref<{ exportCSV: () => void }> },
+  props: TabelaGenericaProps<T> & {
+    ref?: React.Ref<{ exportCSV: () => void }>;
+  },
 ) => React.ReactElement;
