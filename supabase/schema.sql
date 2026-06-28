@@ -56,7 +56,7 @@ create table public.clients (
   constraint clients_pkey primary key (id),
   constraint clients_cnpj_key unique (cnpj),
   constraint clients_categoria_id_fkey
-    foreign key (categoria_id) references categorias (id) on delete restrict
+    foreign key (categoria_id) references categorias (id)
 ) tablespace pg_default;
 
 create trigger clients_updated_at
