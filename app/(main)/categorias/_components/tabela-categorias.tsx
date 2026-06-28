@@ -12,8 +12,8 @@ import TabelaGenerica from "../../../../components/tabelaGenerica";
 import CrudDialog from "../../../../components/crudDialog";
 import ConfirmarExclusaoDialog from "../../../../components/confirmarExclusaoDialog";
 import { useCrud } from "../../../../hooks/useCrud";
-import { TipoDocumento } from "@/types/entidades-banco/tipoDocumento";
-import { pesquisarTiposDocumentos } from "@/services/tipodocumento-service";
+import { DocumentoObrigatorio } from "@/types/entidades-banco/documentoObrigatorio";
+import { pesquisarDocumentosObrigatorios } from "@/services/documentoobrigatorio-service";
 import {
   CategoriaForm,
   pesquisarCategorias,
@@ -29,15 +29,15 @@ interface TabelaCategoriasProps {
 const categoriaVazia: CategoriaForm = {
   id: "",
   descricao: "",
-  tiposDocumentosIds: [],
+  documentosObrigatoriosIds: [],
 };
 
 export default function TabelaCategorias({ titulo }: TabelaCategoriasProps) {
-  const [tiposDocumentos, setTiposDocumentos] = useState<TipoDocumento[]>([]);
+  const [documentosObrigatorios, setDocumentosObrigatorios] = useState<DocumentoObrigatorio[]>([]);
   const [filtroTipo, setFiltroTipo] = useState("");
 
   useEffect(() => {
-    pesquisarTiposDocumentos().then(setTiposDocumentos).catch(console.error);
+    pesquisarDocumentosObrigatorios().then(setDocumentosObrigatorios).catch(console.error);
   }, []);
 
   const {
@@ -131,7 +131,7 @@ export default function TabelaCategorias({ titulo }: TabelaCategoriasProps) {
         </div>
 
         <div className="field">
-          <label className="font-bold block mb-2">Tipos de Documentos</label>
+          <label className="font-bold block mb-2">Documentos Obrigatórios</label>
           <InputText
             value={filtroTipo}
             onChange={(e) => setFiltroTipo(e.target.value)}
@@ -139,7 +139,7 @@ export default function TabelaCategorias({ titulo }: TabelaCategoriasProps) {
             className="w-full mb-5"
           />
           <Controller
-            name="tiposDocumentosIds"
+            name="documentosObrigatoriosIds"
             control={control}
             render={({ field }) => (
               <div
@@ -156,7 +156,7 @@ export default function TabelaCategorias({ titulo }: TabelaCategoriasProps) {
                     gap: "0.5rem",
                   }}
                 >
-                  {tiposDocumentos
+                  {documentosObrigatorios
                     .filter((t) =>
                       t.descricao
                         .toLowerCase()
@@ -185,9 +185,9 @@ export default function TabelaCategorias({ titulo }: TabelaCategoriasProps) {
                         </label>
                       </div>
                     ))}
-                  {tiposDocumentos.length === 0 && (
+                  {documentosObrigatorios.length === 0 && (
                     <small className="text-color-secondary">
-                      Nenhum tipo de documento cadastrado
+                      Nenhum documento obrigatório cadastrado
                     </small>
                   )}
                 </div>

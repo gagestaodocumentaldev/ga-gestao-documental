@@ -7,11 +7,11 @@ import { Toast } from "primereact/toast";
 import { useRef, useState } from "react";
 
 import { Documento } from "@/types/entidades-banco/documento";
-import { TipoDocumento } from "@/types/entidades-banco/tipoDocumento";
+import { DocumentoObrigatorio } from "@/types/entidades-banco/documentoObrigatorio";
 
 interface Props {
   documentos: Documento[];
-  tiposDisponiveis: TipoDocumento[];
+  tiposDisponiveis: DocumentoObrigatorio[];
 }
 
 const LIMIT = 10;
@@ -65,7 +65,7 @@ export default function PainelCoberturaDocumental({
 
   const tiposPreenchidos = documentos
     .map((d) => d.tipo)
-    .filter((t): t is TipoDocumento => !!t);
+    .filter((t): t is DocumentoObrigatorio => !!t);
 
   const preenchidosVisiveis = expandido
     ? tiposPreenchidos

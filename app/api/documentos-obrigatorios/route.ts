@@ -1,13 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { TipoDocumento } from "@/types/entidades-banco/tipoDocumento";
+import { DocumentoObrigatorio } from "@/types/entidades-banco/documentoObrigatorio";
 
 export async function GET() {
   const supabase = await createClient();
 
   const { data, error, count } = await supabase
-    .from("tipos_documentos")
+    .from("documentos_obrigatorios")
     .select("*", { count: "exact" })
     .order("descricao");
 
@@ -15,16 +15,16 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ tiposDocumentos: data, totalRecords: count ?? 0 });
+  return NextResponse.json({ documentosObrigatorios: data, totalRecords: count ?? 0 });
 }
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as Partial<TipoDocumento>;
+  const body = (await request.json()) as Partial<DocumentoObrigatorio>;
 
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("tipos_documentos")
+    .from("documentos_obrigatorios")
     .insert({ descricao: body.descricao })
     .select()
     .single();
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  revalidatePath("/tipodocumento");
+  revalidatePath("/documentosobrigatorios");
 
   return NextResponse.json(data, { status: 201 });
 }

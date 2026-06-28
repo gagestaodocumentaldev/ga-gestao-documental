@@ -1,12 +1,12 @@
 import { Client } from "./client";
 import { DocumentStatus } from "./documento-status";
-import { TipoDocumento } from "./tipoDocumento";
+import { DocumentoObrigatorio } from "./documentoObrigatorio";
 
 export interface Documento {
   id: string;
   client: Client;
   numero: string;
-  tipo?: TipoDocumento;
+  tipo?: DocumentoObrigatorio;
   data_emissao?: string;
   data_validade?: string;
   file_url?: string;

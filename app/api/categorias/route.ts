@@ -7,7 +7,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("categorias")
-    .select("id, descricao, created_at, categorias_tipos_documentos(tipo_documento_id)")
+    .select("id, descricao, created_at, categorias_documentos_obrigatorios(documento_obrigatorio_id)")
     .order("descricao");
 
   if (error) {
@@ -18,9 +18,9 @@ export async function GET() {
     id: cat.id,
     descricao: cat.descricao,
     created_at: cat.created_at,
-    tiposDocumentosIds: (
-      cat.categorias_tipos_documentos as { tipo_documento_id: string }[]
-    ).map((ctd) => ctd.tipo_documento_id),
+    documentosObrigatoriosIds: (
+      cat.categorias_documentos_obrigatorios as { documento_obrigatorio_id: string }[]
+    ).map((ctd) => ctd.documento_obrigatorio_id),
   }));
 
   return NextResponse.json({ categorias, totalRecords: categorias.length });
@@ -29,7 +29,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as {
     descricao: string;
-    tiposDocumentosIds?: string[];
+    documentosObrigatoriosIds?: string[];
   };
 
   const supabase = await createClient();
@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  if (body.tiposDocumentosIds?.length) {
-    const junctions = body.tiposDocumentosIds.map((tipoId) => ({
+  if (body.documentosObrigatoriosIds?.length) {
+    const junctions = body.documentosObrigatoriosIds.map((tipoId) => ({
       categoria_id: categoria.id,
-      tipo_documento_id: tipoId,
+      documento_obrigatorio_id: tipoId,
     }));
 
     const { error: junctionError } = await supabase
-      .from("categorias_tipos_documentos")
+      .from("categorias_documentos_obrigatorios")
       .insert(junctions);
 
     if (junctionError) {

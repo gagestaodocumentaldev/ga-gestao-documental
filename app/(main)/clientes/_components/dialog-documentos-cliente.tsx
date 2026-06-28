@@ -138,7 +138,7 @@ export default function DialogDocumentosCliente({
                 row.numero || <span className="text-color-secondary">—</span>,
             },
             {
-              header: "Tipo do Documento",
+              header: "Documento Obrigatório",
               sortable: false,
               body: (row: Documento) => row.tipo?.descricao ?? "—",
             },
@@ -206,12 +206,12 @@ export default function DialogDocumentosCliente({
 
         <div className="field mb-3">
           <label htmlFor="tipo" className="font-bold">
-            Tipo do Documento
+            Documento Obrigatório
           </label>
           <Controller
             name="tipo"
             control={control}
-            rules={{ required: "Tipo é obrigatório" }}
+            rules={{ required: "Documento obrigatório é obrigatório" }}
             render={({ field }) => (
               <>
                 <Dropdown
@@ -221,7 +221,7 @@ export default function DialogDocumentosCliente({
                   options={tipos}
                   optionLabel="descricao"
                   optionValue="id"
-                  placeholder="Selecione um tipo"
+                  placeholder="Selecione um documento"
                   filter
                   loading={loadingTipos}
                   disabled={loadingTipos}

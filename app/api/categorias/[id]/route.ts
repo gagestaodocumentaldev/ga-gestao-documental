@@ -9,7 +9,7 @@ export async function PUT(
   const { id } = await params;
   const body = (await request.json()) as {
     descricao: string;
-    tiposDocumentosIds?: string[];
+    documentosObrigatoriosIds?: string[];
   };
 
   const supabase = await createClient();
@@ -26,7 +26,7 @@ export async function PUT(
   }
 
   const { error: deleteError } = await supabase
-    .from("categorias_tipos_documentos")
+    .from("categorias_documentos_obrigatorios")
     .delete()
     .eq("categoria_id", id);
 
@@ -34,14 +34,14 @@ export async function PUT(
     return NextResponse.json({ error: deleteError.message }, { status: 500 });
   }
 
-  if (body.tiposDocumentosIds?.length) {
-    const junctions = body.tiposDocumentosIds.map((tipoId) => ({
+  if (body.documentosObrigatoriosIds?.length) {
+    const junctions = body.documentosObrigatoriosIds.map((tipoId) => ({
       categoria_id: id,
-      tipo_documento_id: tipoId,
+      documento_obrigatorio_id: tipoId,
     }));
 
     const { error: insertError } = await supabase
-      .from("categorias_tipos_documentos")
+      .from("categorias_documentos_obrigatorios")
       .insert(junctions);
 
     if (insertError) {

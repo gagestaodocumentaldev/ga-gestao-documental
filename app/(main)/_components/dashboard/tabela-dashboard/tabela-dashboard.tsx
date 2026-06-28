@@ -42,7 +42,11 @@ export default function TabelaDashboard({
                 <span className="text-color-secondary">—</span>
               ),
           },
-          { field: "tipo.descricao", header: "Tipo Documento", sortable: true },
+          {
+            field: "tipo.descricao",
+            header: "Documento Obrigatório",
+            sortable: true,
+          },
           {
             field: "data_validade",
             header: "Data Validade",

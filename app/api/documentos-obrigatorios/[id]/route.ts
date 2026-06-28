@@ -1,19 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { TipoDocumento } from "@/types/entidades-banco/tipoDocumento";
+import { DocumentoObrigatorio } from "@/types/entidades-banco/documentoObrigatorio";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const body = (await request.json()) as Partial<TipoDocumento>;
+  const body = (await request.json()) as Partial<DocumentoObrigatorio>;
 
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("tipos_documentos")
+    .from("documentos_obrigatorios")
     .update({ descricao: body.descricao })
     .eq("id", id)
     .select()
@@ -23,7 +23,7 @@ export async function PUT(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  revalidatePath("/tipodocumento");
+  revalidatePath("/documentosobrigatorios");
 
   return NextResponse.json(data);
 }
@@ -37,7 +37,7 @@ export async function DELETE(
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("tipos_documentos")
+    .from("documentos_obrigatorios")
     .delete()
     .eq("id", id);
 
@@ -45,7 +45,7 @@ export async function DELETE(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  revalidatePath("/tipodocumento");
+  revalidatePath("/documentosobrigatorios");
 
   return NextResponse.json({ success: true });
 }
