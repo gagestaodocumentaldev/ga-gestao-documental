@@ -7,10 +7,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const body = (await request.json()) as {
-    descricao: string;
-    documentosObrigatoriosIds?: string[];
-  };
+  const body = (await request.json()) as { descricao: string };
 
   const supabase = await createClient();
 
@@ -23,30 +20,6 @@ export async function PUT(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  const { error: deleteError } = await supabase
-    .from("categorias_documentos_obrigatorios")
-    .delete()
-    .eq("categoria_id", id);
-
-  if (deleteError) {
-    return NextResponse.json({ error: deleteError.message }, { status: 500 });
-  }
-
-  if (body.documentosObrigatoriosIds?.length) {
-    const junctions = body.documentosObrigatoriosIds.map((tipoId) => ({
-      categoria_id: id,
-      documento_obrigatorio_id: tipoId,
-    }));
-
-    const { error: insertError } = await supabase
-      .from("categorias_documentos_obrigatorios")
-      .insert(junctions);
-
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
-    }
   }
 
   revalidatePath("/categorias");

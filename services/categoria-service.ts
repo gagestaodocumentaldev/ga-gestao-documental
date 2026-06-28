@@ -1,10 +1,6 @@
 import { Categoria } from "@/types/entidades-banco/categoria";
 
-export interface CategoriaForm extends Categoria {
-  documentosObrigatoriosIds: string[];
-}
-
-export async function pesquisarCategorias(): Promise<CategoriaForm[]> {
+export async function pesquisarCategorias(): Promise<Categoria[]> {
   const res = await fetch("/api/categorias");
   if (!res.ok) throw new Error("Erro ao buscar categorias");
   const data = await res.json();
@@ -12,8 +8,8 @@ export async function pesquisarCategorias(): Promise<CategoriaForm[]> {
 }
 
 export async function criarCategoria(
-  categoria: Partial<CategoriaForm>,
-): Promise<CategoriaForm> {
+  categoria: Partial<Categoria>,
+): Promise<Categoria> {
   const res = await fetch("/api/categorias", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -28,8 +24,8 @@ export async function criarCategoria(
 
 export async function atualizarCategoria(
   id: string,
-  categoria: Partial<CategoriaForm>,
-): Promise<CategoriaForm> {
+  categoria: Partial<Categoria>,
+): Promise<Categoria> {
   const res = await fetch(`/api/categorias/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
