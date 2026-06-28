@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "primereact/button";
+import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { InputMask } from "primereact/inputmask";
 import { InputText } from "primereact/inputtext";
@@ -11,6 +12,7 @@ import { Controller } from "react-hook-form";
 
 import { formatDate } from "@/utils/dateUtil";
 import { pesquisarCategorias } from "@/services/categoria-service";
+import { pesquisarTiposDocumentos } from "@/services/tipodocumento-service";
 import {
   atualizarCliente,
   ClienteForm,
@@ -20,6 +22,7 @@ import {
 } from "@/services/cliente-service";
 import { Categoria } from "@/types/entidades-banco/categoria";
 import { Client } from "@/types/entidades-banco/client";
+import { TipoDocumento } from "@/types/entidades-banco/tipoDocumento";
 import ConfirmarExclusaoDialog from "../../../../components/confirmarExclusaoDialog";
 import CrudDialog from "../../../../components/crudDialog";
 import TabelaGenerica from "../../../../components/tabelaGenerica";
@@ -36,16 +39,20 @@ const clienteVazio: ClienteForm = {
   cnpj: "",
   telefone: "",
   categoria_id: "",
+  tiposDocumentosIds: [],
 };
 
 export default function TabelaClientes({ titulo }: TabelaClientesProps) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [tiposDocumentos, setTiposDocumentos] = useState<TipoDocumento[]>([]);
+  const [filtroTipo, setFiltroTipo] = useState("");
   const [clienteParaDocumentos, setClienteParaDocumentos] =
     useState<Client | null>(null);
   const [dialogDocumentosVisivel, setDialogDocumentosVisivel] = useState(false);
 
   useEffect(() => {
     pesquisarCategorias().then(setCategorias).catch(console.error);
+    pesquisarTiposDocumentos().then(setTiposDocumentos).catch(console.error);
   }, []);
 
   const {
@@ -80,6 +87,11 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
     ),
   });
 
+  const fecharDialog = () => {
+    setFiltroTipo("");
+    fechar();
+  };
+
   return (
     <>
       <Toast ref={toast} />
@@ -106,7 +118,7 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
             header: "Documentos",
             sortable: false,
             body: (row: ClienteForm) =>
-              `${row.documentos_count ?? 0}/${row.tipos_categoria_count ?? 0}`,
+              `${row.documentos_count ?? 0}/${row.tipos_count ?? 0}`,
           },
           { field: "cnpj", header: "CNPJ", sortable: true },
           { field: "telefone", header: "Telefone", sortable: false },
@@ -127,7 +139,7 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
       <CrudDialog
         visible={dialogAberto}
         titulo="Detalhes do Cliente"
-        onHide={fechar}
+        onHide={fecharDialog}
         onSalvar={handleSubmit((data) =>
           salvar(data, {
             criarFn: criarCliente,
@@ -139,6 +151,7 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
           }),
         )}
         salvando={salvando}
+        largura="90%"
       >
         <div className="field mb-3">
           <label htmlFor="nome" className="font-bold">
@@ -226,6 +239,76 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
                 filter
                 className="w-full"
               />
+            )}
+          />
+        </div>
+
+        <div className="field">
+          <label className="font-bold block my-2">Tipos de Documentos</label>
+          <InputText
+            value={filtroTipo}
+            onChange={(e) => setFiltroTipo(e.target.value)}
+            placeholder="Pesquisar tipo..."
+            className="w-full mb-5"
+          />
+          <Controller
+            name="tiposDocumentosIds"
+            control={control}
+            defaultValue={[]}
+            render={({ field }) => (
+              <div
+                style={{
+                  maxHeight: "320px",
+                  overflowY: "auto",
+                  paddingRight: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "0.5rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  {tiposDocumentos
+                    .filter((t) =>
+                      t.descricao
+                        .toLowerCase()
+                        .includes(filtroTipo.toLowerCase()),
+                    )
+                    .map((tipo) => (
+                      <div
+                        key={tipo.id}
+                        className="flex align-items-center gap-2"
+                      >
+                        <Checkbox
+                          inputId={`cliente-tipo-${tipo.id}`}
+                          checked={field.value.includes(tipo.id)}
+                          onChange={(e) => {
+                            const next = e.checked
+                              ? [...field.value, tipo.id]
+                              : field.value.filter(
+                                  (id: string) => id !== tipo.id,
+                                );
+                            field.onChange(next);
+                          }}
+                        />
+                        <label
+                          htmlFor={`cliente-tipo-${tipo.id}`}
+                          className="cursor-pointer"
+                        >
+                          {tipo.descricao}
+                        </label>
+                      </div>
+                    ))}
+                  {tiposDocumentos.length === 0 && (
+                    <small className="text-color-secondary">
+                      Nenhum tipo de documento cadastrado
+                    </small>
+                  )}
+                </div>
+              </div>
             )}
           />
         </div>

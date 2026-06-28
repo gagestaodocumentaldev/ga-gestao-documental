@@ -1,8 +1,6 @@
 import { Categoria } from "@/types/entidades-banco/categoria";
 
-export interface CategoriaForm extends Categoria {
-  tiposDocumentosIds: string[];
-}
+export type CategoriaForm = Categoria;
 
 export async function pesquisarCategorias(): Promise<CategoriaForm[]> {
   const res = await fetch("/api/categorias");

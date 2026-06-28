@@ -9,7 +9,6 @@ export async function PUT(
   const { id } = await params;
   const body = (await request.json()) as {
     descricao: string;
-    tiposDocumentosIds?: string[];
   };
 
   const supabase = await createClient();
@@ -23,30 +22,6 @@ export async function PUT(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  const { error: deleteError } = await supabase
-    .from("categorias_tipos_documentos")
-    .delete()
-    .eq("categoria_id", id);
-
-  if (deleteError) {
-    return NextResponse.json({ error: deleteError.message }, { status: 500 });
-  }
-
-  if (body.tiposDocumentosIds?.length) {
-    const junctions = body.tiposDocumentosIds.map((tipoId) => ({
-      categoria_id: id,
-      tipo_documento_id: tipoId,
-    }));
-
-    const { error: insertError } = await supabase
-      .from("categorias_tipos_documentos")
-      .insert(junctions);
-
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
-    }
   }
 
   revalidatePath("/categorias");
