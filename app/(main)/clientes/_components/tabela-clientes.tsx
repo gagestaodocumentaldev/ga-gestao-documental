@@ -313,98 +313,98 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
               });
 
               return (
-                <div
-                  style={{
-                    maxHeight: "320px",
-                    overflowY: "auto",
-                    paddingRight: "4px",
-                  }}
-                >
+                <div style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
                   {tiposDocumentos.length === 0 && (
                     <small className="text-color-secondary">
                       Nenhum tipo de documento cadastrado
                     </small>
                   )}
-                  {grupos.map(([key, { label, tipos }]) => {
-                    const todosNoGrupo = tipos.map((t) => t.id);
-                    const selecionados = todosNoGrupo.filter((id) =>
-                      field.value.includes(id),
-                    );
-                    const checkedGrupo =
-                      selecionados.length === todosNoGrupo.length &&
-                      todosNoGrupo.length > 0;
-                    const indeterminateGrupo =
-                      selecionados.length > 0 && !checkedGrupo;
+                  <div className="flex flex-column gap-3">
+                    {grupos.map(([key, { label, tipos }]) => {
+                      const todosNoGrupo = tipos.map((t) => t.id);
+                      const selecionados = todosNoGrupo.filter((id) =>
+                        field.value.includes(id),
+                      );
+                      const checkedGrupo =
+                        selecionados.length === todosNoGrupo.length &&
+                        todosNoGrupo.length > 0;
+                      const indeterminateGrupo =
+                        selecionados.length > 0 && !checkedGrupo;
 
-                    return (
-                      <div key={key} style={{ marginBottom: "1rem" }}>
-                        <div className="flex align-items-center gap-2 mb-2">
-                          <CheckboxGrupo
-                            inputId={`grupo-${key}`}
-                            checked={checkedGrupo}
-                            indeterminate={indeterminateGrupo}
-                            onChange={(e) => {
-                              if (e.checked) {
-                                field.onChange([
-                                  ...new Set([
-                                    ...field.value,
-                                    ...todosNoGrupo,
-                                  ]),
-                                ]);
-                              } else {
-                                field.onChange(
-                                  field.value.filter(
-                                    (id: string) =>
-                                      !todosNoGrupo.includes(id),
-                                  ),
-                                );
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`grupo-${key}`}
-                            className="font-bold cursor-pointer"
-                          >
-                            {label}
-                          </label>
-                        </div>
+                      return (
                         <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr 1fr",
-                            gap: "0.5rem",
-                            paddingLeft: "1.5rem",
-                          }}
+                          key={key}
+                          className="border-1 surface-border border-round-lg overflow-hidden"
                         >
-                          {tipos.map((tipo) => (
-                            <div
-                              key={tipo.id}
-                              className="flex align-items-center gap-2"
-                            >
-                              <Checkbox
-                                inputId={`cliente-tipo-${tipo.id}`}
-                                checked={field.value.includes(tipo.id)}
+                          <div className="flex align-items-center justify-content-between gap-2 p-3 surface-100 border-bottom-1 surface-border">
+                            <div className="flex align-items-center gap-2">
+                              <CheckboxGrupo
+                                inputId={`grupo-${key}`}
+                                checked={checkedGrupo}
+                                indeterminate={indeterminateGrupo}
                                 onChange={(e) => {
-                                  const next = e.checked
-                                    ? [...field.value, tipo.id]
-                                    : field.value.filter(
-                                        (id: string) => id !== tipo.id,
-                                      );
-                                  field.onChange(next);
+                                  if (e.checked) {
+                                    field.onChange([
+                                      ...new Set([...field.value, ...todosNoGrupo]),
+                                    ]);
+                                  } else {
+                                    field.onChange(
+                                      field.value.filter(
+                                        (id: string) => !todosNoGrupo.includes(id),
+                                      ),
+                                    );
+                                  }
                                 }}
                               />
                               <label
-                                htmlFor={`cliente-tipo-${tipo.id}`}
-                                className="cursor-pointer"
+                                htmlFor={`grupo-${key}`}
+                                className="font-semibold cursor-pointer"
                               >
-                                {tipo.descricao}
+                                {label}
                               </label>
                             </div>
-                          ))}
+                            <span className="text-sm text-color-secondary">
+                              {selecionados.length}/{todosNoGrupo.length}
+                            </span>
+                          </div>
+                          <div
+                            className="p-3"
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr 1fr",
+                              gap: "0.625rem",
+                            }}
+                          >
+                            {tipos.map((tipo) => (
+                              <div
+                                key={tipo.id}
+                                className="flex align-items-center gap-2"
+                              >
+                                <Checkbox
+                                  inputId={`cliente-tipo-${tipo.id}`}
+                                  checked={field.value.includes(tipo.id)}
+                                  onChange={(e) => {
+                                    const next = e.checked
+                                      ? [...field.value, tipo.id]
+                                      : field.value.filter(
+                                          (id: string) => id !== tipo.id,
+                                        );
+                                    field.onChange(next);
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`cliente-tipo-${tipo.id}`}
+                                  className="cursor-pointer text-sm"
+                                >
+                                  {tipo.descricao}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               );
             }}
