@@ -7,8 +7,9 @@ import { InputMask } from "primereact/inputmask";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
+import { CheckboxChangeEvent } from "primereact/checkbox";
 
 import { formatDate } from "@/utils/dateUtil";
 import { pesquisarCategorias } from "@/services/categoria-service";
@@ -28,6 +29,35 @@ import CrudDialog from "../../../../components/crudDialog";
 import TabelaGenerica from "../../../../components/tabelaGenerica";
 import { useCrud } from "../../../../hooks/useCrud";
 import DialogDocumentosCliente from "./dialog-documentos-cliente";
+
+function CheckboxGrupo({
+  inputId,
+  checked,
+  indeterminate,
+  onChange,
+}: {
+  inputId: string;
+  checked: boolean;
+  indeterminate: boolean;
+  onChange: (e: CheckboxChangeEvent) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
+  return (
+    <Checkbox
+      inputId={inputId}
+      inputRef={inputRef}
+      checked={checked}
+      onChange={onChange}
+    />
+  );
+}
 
 interface TabelaClientesProps {
   titulo: string;
@@ -255,61 +285,129 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
             name="tiposDocumentosIds"
             control={control}
             defaultValue={[]}
-            render={({ field }) => (
-              <div
-                style={{
-                  maxHeight: "320px",
-                  overflowY: "auto",
-                  paddingRight: "4px",
-                }}
-              >
+            render={({ field }) => {
+              const tiposFiltrados = tiposDocumentos.filter((t) =>
+                t.descricao.toLowerCase().includes(filtroTipo.toLowerCase()),
+              );
+
+              const gruposMap = new Map<
+                string,
+                { label: string; tipos: TipoDocumento[] }
+              >();
+              for (const tipo of tiposFiltrados) {
+                const key = tipo.familia_id ?? "sem-familia";
+                if (!gruposMap.has(key)) {
+                  gruposMap.set(key, {
+                    label:
+                      tipo.familias_documentos?.descricao ?? "Sem família",
+                    tipos: [],
+                  });
+                }
+                gruposMap.get(key)!.tipos.push(tipo);
+              }
+
+              const grupos = [...gruposMap.entries()].sort(([a], [b]) => {
+                if (a === "sem-familia") return 1;
+                if (b === "sem-familia") return -1;
+                return 0;
+              });
+
+              return (
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
-                    gap: "0.5rem",
-                    marginBottom: "1rem",
+                    maxHeight: "320px",
+                    overflowY: "auto",
+                    paddingRight: "4px",
                   }}
                 >
-                  {tiposDocumentos
-                    .filter((t) =>
-                      t.descricao
-                        .toLowerCase()
-                        .includes(filtroTipo.toLowerCase()),
-                    )
-                    .map((tipo) => (
-                      <div
-                        key={tipo.id}
-                        className="flex align-items-center gap-2"
-                      >
-                        <Checkbox
-                          inputId={`cliente-tipo-${tipo.id}`}
-                          checked={field.value.includes(tipo.id)}
-                          onChange={(e) => {
-                            const next = e.checked
-                              ? [...field.value, tipo.id]
-                              : field.value.filter(
-                                  (id: string) => id !== tipo.id,
-                                );
-                            field.onChange(next);
-                          }}
-                        />
-                        <label
-                          htmlFor={`cliente-tipo-${tipo.id}`}
-                          className="cursor-pointer"
-                        >
-                          {tipo.descricao}
-                        </label>
-                      </div>
-                    ))}
                   {tiposDocumentos.length === 0 && (
                     <small className="text-color-secondary">
                       Nenhum tipo de documento cadastrado
                     </small>
                   )}
+                  {grupos.map(([key, { label, tipos }]) => {
+                    const todosNoGrupo = tipos.map((t) => t.id);
+                    const selecionados = todosNoGrupo.filter((id) =>
+                      field.value.includes(id),
+                    );
+                    const checkedGrupo =
+                      selecionados.length === todosNoGrupo.length &&
+                      todosNoGrupo.length > 0;
+                    const indeterminateGrupo =
+                      selecionados.length > 0 && !checkedGrupo;
+
+                    return (
+                      <div key={key} style={{ marginBottom: "1rem" }}>
+                        <div className="flex align-items-center gap-2 mb-2">
+                          <CheckboxGrupo
+                            inputId={`grupo-${key}`}
+                            checked={checkedGrupo}
+                            indeterminate={indeterminateGrupo}
+                            onChange={(e) => {
+                              if (e.checked) {
+                                field.onChange([
+                                  ...new Set([
+                                    ...field.value,
+                                    ...todosNoGrupo,
+                                  ]),
+                                ]);
+                              } else {
+                                field.onChange(
+                                  field.value.filter(
+                                    (id: string) =>
+                                      !todosNoGrupo.includes(id),
+                                  ),
+                                );
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor={`grupo-${key}`}
+                            className="font-bold cursor-pointer"
+                          >
+                            {label}
+                          </label>
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr 1fr",
+                            gap: "0.5rem",
+                            paddingLeft: "1.5rem",
+                          }}
+                        >
+                          {tipos.map((tipo) => (
+                            <div
+                              key={tipo.id}
+                              className="flex align-items-center gap-2"
+                            >
+                              <Checkbox
+                                inputId={`cliente-tipo-${tipo.id}`}
+                                checked={field.value.includes(tipo.id)}
+                                onChange={(e) => {
+                                  const next = e.checked
+                                    ? [...field.value, tipo.id]
+                                    : field.value.filter(
+                                        (id: string) => id !== tipo.id,
+                                      );
+                                  field.onChange(next);
+                                }}
+                              />
+                              <label
+                                htmlFor={`cliente-tipo-${tipo.id}`}
+                                className="cursor-pointer"
+                              >
+                                {tipo.descricao}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              );
+            }}
           />
         </div>
       </CrudDialog>
