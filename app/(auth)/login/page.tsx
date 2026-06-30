@@ -19,7 +19,7 @@ const LoginPage = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     defaultValues: {
       email: "",
@@ -134,7 +134,7 @@ const LoginPage = () => {
           {loginError && (
             <Message severity="error" text={loginError} className="w-full" />
           )}
-          <Button label="Entrar" className="w-full p-3 text-xl" type="submit" />
+          <Button label="Entrar" className="w-full p-3 text-xl" type="submit" loading={isSubmitting} />
         </form>
       </div>
     </div>
