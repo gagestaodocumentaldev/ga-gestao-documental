@@ -56,7 +56,7 @@ create table public.clients (
   constraint clients_pkey primary key (id),
   constraint clients_cnpj_key unique (cnpj),
   constraint clients_categoria_id_fkey
-    foreign key (categoria_id) references categorias (id)
+    foreign key (categoria_id) references categorias (id) on delete restrict
 ) tablespace pg_default;
 
 create trigger clients_updated_at
@@ -123,8 +123,8 @@ create trigger documents_updated_at
 
 create table public.profiles (
   id         uuid not null,
+  nome       text not null,
   perfil     text not null,
-  nome       text null,
   created_at timestamp with time zone not null default now(),
   constraint profiles_pkey primary key (id),
   constraint profiles_id_fkey
