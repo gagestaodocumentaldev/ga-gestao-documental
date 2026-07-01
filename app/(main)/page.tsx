@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [activeStatus, setActiveStatus] = useState<StatusType | null>(null);
 
   useEffect(() => {
-    pesquisarDocumentos()
+    pesquisarDocumentos(undefined, undefined, false, true)
       .then((data) => setDocumentos(data))
       .catch((err) => console.error(err));
   }, []);

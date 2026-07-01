@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
   const rows = Number(searchParams.get("rows")) || 10;
   const termo = searchParams.get("termo") || "";
   const client_id = searchParams.get("client_id") || "";
+  const all = searchParams.get("all") === "true";
 
   const supabase = await createClient();
 
@@ -43,9 +44,12 @@ export async function GET(request: NextRequest) {
     query = query.not("data_validade", "is", null);
   }
 
-  const { data, error, count } = await query
-    .order("data_validade")
-    .range(from, to);
+  query = query.order("data_validade");
+  if (!all) {
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
