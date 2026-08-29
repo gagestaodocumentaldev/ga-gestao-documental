@@ -6,6 +6,10 @@ import { FileUpload } from "primereact/fileupload";
 import { Toast } from "primereact/toast";
 
 import {
+  atualizarCliente,
+  pesquisarClientePorId,
+} from "@/services/cliente-service";
+import {
   atualizarDocumento,
   criarDocumento,
   deletarArquivoDocumento,
@@ -50,6 +54,8 @@ export function useDocumentosCliente(clienteId: string) {
   const [removendoArquivo, setRemovendoArquivo] = useState(false);
   const [uploadando, setUploadando] = useState(false);
   const [loadingTipos, setLoadingTipos] = useState(false);
+  const [observacoes, setObservacoes] = useState("");
+  const [salvandoObservacoes, setSalvandoObservacoes] = useState(false);
 
   const {
     control,
@@ -72,6 +78,12 @@ export function useDocumentosCliente(clienteId: string) {
 
   useEffect(() => {
     recarregar();
+  }, [clienteId]);
+
+  useEffect(() => {
+    pesquisarClientePorId(clienteId)
+      .then((cliente) => setObservacoes(cliente.observacoes ?? ""))
+      .catch(console.error);
   }, [clienteId]);
 
   const abrirNovo = () => {
@@ -233,6 +245,28 @@ export function useDocumentosCliente(clienteId: string) {
     }
   };
 
+  const salvarObservacoes = async () => {
+    setSalvandoObservacoes(true);
+    try {
+      await atualizarCliente(clienteId, { observacoes });
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Observações salvas",
+        life: 3000,
+      });
+    } catch (err) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: err instanceof Error ? err.message : "Erro desconhecido",
+        life: 3000,
+      });
+    } finally {
+      setSalvandoObservacoes(false);
+    }
+  };
+
   return {
     toast,
     fileUploadRef,
@@ -254,6 +288,10 @@ export function useDocumentosCliente(clienteId: string) {
     control,
     handleSubmit,
     errors,
+    observacoes,
+    setObservacoes,
+    salvandoObservacoes,
+    salvarObservacoes,
     abrirNovo,
     editar,
     fecharForm,

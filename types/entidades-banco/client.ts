@@ -6,6 +6,7 @@ export interface Client {
     cnpj: string;
     telefone?: string;
     drive_folder_id?: string;
+    observacoes?: string;
     categoria?: Categoria;
     created_at?: string;
     updated_at?: string;

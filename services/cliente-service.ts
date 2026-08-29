@@ -12,6 +12,12 @@ export async function pesquisarClientes(): Promise<ClienteForm[]> {
   return data.clientes ?? [];
 }
 
+export async function pesquisarClientePorId(id: string): Promise<ClienteForm> {
+  const res = await fetch(`/api/clientes/${id}`);
+  if (!res.ok) throw new Error("Erro ao buscar cliente");
+  return res.json();
+}
+
 export async function criarCliente(cliente: Partial<ClienteForm>): Promise<ClienteForm> {
   const res = await fetch("/api/clientes", {
     method: "POST",

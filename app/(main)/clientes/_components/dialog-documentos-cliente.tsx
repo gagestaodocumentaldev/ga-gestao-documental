@@ -6,6 +6,7 @@ import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
 import { ProgressBar } from "primereact/progressbar";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
@@ -58,6 +59,10 @@ export default function DialogDocumentosCliente({
     control,
     handleSubmit,
     errors,
+    observacoes,
+    setObservacoes,
+    salvandoObservacoes,
+    salvarObservacoes,
     abrirNovo,
     editar,
     fecharForm,
@@ -182,6 +187,34 @@ export default function DialogDocumentosCliente({
             },
           ]}
         />
+
+        <div className="field mt-4">
+          <div className="flex justify-content-between align-items-center mb-2">
+            <label htmlFor="observacoes" className="font-bold">
+              Observações
+            </label>
+            <span className="text-color-secondary text-sm">
+              {observacoes.length}/5000
+            </span>
+          </div>
+          <InputTextarea
+            id="observacoes"
+            value={observacoes}
+            onChange={(e) => setObservacoes(e.target.value)}
+            rows={5}
+            maxLength={5000}
+            autoResize
+            className="w-full"
+          />
+          <div className="flex justify-content-end mt-2">
+            <Button
+              label="Salvar observações"
+              icon="pi pi-check"
+              loading={salvandoObservacoes}
+              onClick={salvarObservacoes}
+            />
+          </div>
+        </div>
       </Dialog>
 
       <CrudDialog

@@ -34,6 +34,7 @@ export async function GET() {
     cnpj: c.cnpj,
     telefone: c.telefone,
     drive_folder_id: c.drive_folder_id,
+    observacoes: c.observacoes,
     categoria_id: c.categoria_id,
     categoria: c.categorias as Categoria | undefined,
     created_at: c.created_at,
@@ -53,6 +54,7 @@ export async function POST(request: NextRequest) {
     nome: string;
     cnpj: string;
     telefone?: string;
+    observacoes?: string;
     categoria_id?: string;
     tiposDocumentosIds?: string[];
   };
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
       nome: body.nome,
       cnpj: body.cnpj,
       telefone: body.telefone || null,
+      observacoes: body.observacoes || null,
       categoria_id: body.categoria_id || null,
     })
     .select()

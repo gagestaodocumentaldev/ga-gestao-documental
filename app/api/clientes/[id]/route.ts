@@ -3,6 +3,27 @@ import { getDriveClient } from "@/lib/google-drive";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -12,6 +33,7 @@ export async function PUT(
     nome: string;
     cnpj: string;
     telefone?: string;
+    observacoes?: string;
     categoria_id?: string;
     tiposDocumentosIds?: string[];
   };
@@ -24,6 +46,7 @@ export async function PUT(
       nome: body.nome,
       cnpj: body.cnpj,
       telefone: body.telefone || null,
+      observacoes: body.observacoes || null,
       categoria_id: body.categoria_id || null,
     })
     .eq("id", id)
