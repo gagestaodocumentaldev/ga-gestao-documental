@@ -63,6 +63,7 @@ export default function DialogDocumentosCliente({
     setObservacoes,
     salvandoObservacoes,
     salvarObservacoes,
+    houveMudancaObservacoes,
     abrirNovo,
     editar,
     fecharForm,
@@ -211,6 +212,7 @@ export default function DialogDocumentosCliente({
               label="Salvar observações"
               icon="pi pi-check"
               loading={salvandoObservacoes}
+              disabled={!houveMudancaObservacoes}
               onClick={salvarObservacoes}
             />
           </div>

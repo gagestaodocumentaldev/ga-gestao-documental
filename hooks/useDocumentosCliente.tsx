@@ -55,6 +55,7 @@ export function useDocumentosCliente(clienteId: string) {
   const [uploadando, setUploadando] = useState(false);
   const [loadingTipos, setLoadingTipos] = useState(false);
   const [observacoes, setObservacoes] = useState("");
+  const [observacoesOriginal, setObservacoesOriginal] = useState("");
   const [salvandoObservacoes, setSalvandoObservacoes] = useState(false);
 
   const {
@@ -82,7 +83,11 @@ export function useDocumentosCliente(clienteId: string) {
 
   useEffect(() => {
     pesquisarClientePorId(clienteId)
-      .then((cliente) => setObservacoes(cliente.observacoes ?? ""))
+      .then((cliente) => {
+        const valor = cliente.observacoes ?? "";
+        setObservacoes(valor);
+        setObservacoesOriginal(valor);
+      })
       .catch(console.error);
   }, [clienteId]);
 
@@ -249,6 +254,7 @@ export function useDocumentosCliente(clienteId: string) {
     setSalvandoObservacoes(true);
     try {
       await atualizarCliente(clienteId, { observacoes });
+      setObservacoesOriginal(observacoes);
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
@@ -292,6 +298,7 @@ export function useDocumentosCliente(clienteId: string) {
     setObservacoes,
     salvandoObservacoes,
     salvarObservacoes,
+    houveMudancaObservacoes: observacoes !== observacoesOriginal,
     abrirNovo,
     editar,
     fecharForm,
