@@ -38,6 +38,21 @@ const AppMenu = () => {
           icon: "pi pi-fw pi-sitemap",
           to: "/familias",
         },
+        {
+          label: "Fases",
+          icon: "pi pi-fw pi-list",
+          to: "/fases",
+        },
+      ],
+    },
+    {
+      label: "Operacional",
+      items: [
+        {
+          label: "Acompanhamento de Fases",
+          icon: "pi pi-fw pi-chart-line",
+          to: "/acompanhamento-fases",
+        },
       ],
     },
     {

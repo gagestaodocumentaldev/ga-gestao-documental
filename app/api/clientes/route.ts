@@ -77,6 +77,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const { data: fases, error: fasesError } = await supabase
+    .from("fases")
+    .select("id");
+
+  if (fasesError) {
+    await supabase.from("clients").delete().eq("id", data.id);
+    return NextResponse.json({ error: fasesError.message }, { status: 500 });
+  }
+
+  if (fases && fases.length > 0) {
+    const vinculos = fases.map((fase) => ({
+      client_id: data.id,
+      fase_id: fase.id,
+      concluido: false,
+    }));
+
+    const { error: vinculosError } = await supabase
+      .from("clientes_fases")
+      .insert(vinculos);
+
+    if (vinculosError) {
+      await supabase.from("clients").delete().eq("id", data.id);
+      return NextResponse.json(
+        { error: vinculosError.message },
+        { status: 500 },
+      );
+    }
+  }
+
   if (body.tiposDocumentosIds?.length) {
     const junctions = body.tiposDocumentosIds.map((tipoId) => ({
       client_id: data.id,
