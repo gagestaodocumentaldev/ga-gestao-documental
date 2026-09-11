@@ -1,5 +1,45 @@
 import { ClienteFase } from "@/types/entidades-banco/clienteFase";
 
+export interface ClienteFaseResumo {
+  id: string;
+  nome: string;
+  categoria?: { id: string; descricao: string };
+  total: number;
+  concluidas: number;
+  progresso: number;
+}
+
+export interface FaseClientePayload {
+  fase_id: string;
+  associada: boolean;
+  concluido: boolean;
+  concluido_em?: string | null;
+}
+
+export async function pesquisarResumoClientesFases(): Promise<
+  ClienteFaseResumo[]
+> {
+  const res = await fetch("/api/clientes-fases/resumo");
+  if (!res.ok) throw new Error("Erro ao buscar resumo de clientes");
+  const data = await res.json();
+  return data.resumo ?? [];
+}
+
+export async function salvarFasesCliente(
+  clientId: string,
+  fases: FaseClientePayload[],
+): Promise<void> {
+  const res = await fetch("/api/clientes-fases/salvar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ client_id: clientId, fases }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Erro ao salvar fases do cliente");
+  }
+}
+
 export async function pesquisarClientesFases(
   clientId: string,
 ): Promise<ClienteFase[]> {

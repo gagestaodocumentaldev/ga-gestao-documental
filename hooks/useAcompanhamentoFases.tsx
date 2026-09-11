@@ -3,68 +3,81 @@
 import { useEffect, useRef, useState } from "react";
 import { Toast } from "primereact/toast";
 
-import { pesquisarClientes } from "@/services/cliente-service";
-import { pesquisarFases } from "@/services/fase-service";
 import {
-  atualizarStatusFaseCliente,
-  desvincularFaseCliente,
+  ClienteFaseResumo,
+  FaseClientePayload,
   pesquisarClientesFases,
-  vincularFaseCliente,
+  pesquisarResumoClientesFases,
+  salvarFasesCliente,
 } from "@/services/cliente-fase-service";
-import { ClienteForm } from "@/services/cliente-service";
-import { Fase } from "@/types/entidades-banco/fase";
+import { pesquisarFases } from "@/services/fase-service";
 import { ClienteFase } from "@/types/entidades-banco/clienteFase";
+import { Fase } from "@/types/entidades-banco/fase";
 
-export interface FaseAcompanhamento extends Fase {
+export interface FaseDialogState extends Fase {
   associada: boolean;
   concluida: boolean;
   concluido_em?: string | null;
 }
 
+function montarFasesDialog(
+  fases: Fase[],
+  vinculos: ClienteFase[],
+): FaseDialogState[] {
+  const vinculosPorFase = new Map(vinculos.map((cf) => [cf.fase_id, cf]));
+
+  return fases.map((fase) => {
+    const vinculo = vinculosPorFase.get(fase.id);
+    return {
+      ...fase,
+      associada: !!vinculo,
+      concluida: vinculo?.concluido ?? false,
+      concluido_em: vinculo?.concluido_em ?? null,
+    };
+  });
+}
+
 export function useAcompanhamentoFases() {
   const toast = useRef<Toast>(null);
 
-  const [clientes, setClientes] = useState<ClienteForm[]>([]);
-  const [clienteSelecionado, setClienteSelecionado] = useState<string>("");
-  const [todasFases, setTodasFases] = useState<Fase[]>([]);
-  const [clientesFases, setClientesFases] = useState<ClienteFase[]>([]);
-  const [loadingClientes, setLoadingClientes] = useState(true);
-  const [loadingFases, setLoadingFases] = useState(true);
-  const [loadingVinculos, setLoadingVinculos] = useState(false);
+  const [resumo, setResumo] = useState<ClienteFaseResumo[] | undefined>(
+    undefined,
+  );
+  const [dialogAberto, setDialogAberto] = useState(false);
+  const [clienteDialog, setClienteDialog] = useState<ClienteFaseResumo | null>(
+    null,
+  );
+  const [fasesDialog, setFasesDialog] = useState<FaseDialogState[]>([]);
+  const [loadingDialog, setLoadingDialog] = useState(false);
+  const [salvando, setSalvando] = useState(false);
 
-  useEffect(() => {
-    pesquisarClientes()
-      .then(setClientes)
+  const carregarResumo = () => {
+    pesquisarResumoClientesFases()
+      .then(setResumo)
       .catch((err) => {
         toast.current?.show({
           severity: "error",
           summary: "Erro",
-          detail: err instanceof Error ? err.message : "Erro ao buscar clientes",
+          detail:
+            err instanceof Error
+              ? err.message
+              : "Erro ao buscar acompanhamento",
           life: 3000,
         });
-      })
-      .finally(() => setLoadingClientes(false));
+      });
+  };
+
+  useEffect(() => {
+    carregarResumo();
   }, []);
 
   useEffect(() => {
-    pesquisarFases()
-      .then(setTodasFases)
-      .catch((err) => {
-        toast.current?.show({
-          severity: "error",
-          summary: "Erro",
-          detail: err instanceof Error ? err.message : "Erro ao buscar fases",
-          life: 3000,
-        });
+    if (!clienteDialog) return;
+
+    Promise.all([pesquisarFases(), pesquisarClientesFases(clienteDialog.id)])
+      .then(([fases, vinculos]) => {
+        setFasesDialog(montarFasesDialog(fases, vinculos));
       })
-      .finally(() => setLoadingFases(false));
-  }, []);
-
-  useEffect(() => {
-    if (!clienteSelecionado) return;
-
-    pesquisarClientesFases(clienteSelecionado)
-      .then(setClientesFases)
       .catch((err) => {
         toast.current?.show({
           severity: "error",
@@ -76,88 +89,98 @@ export function useAcompanhamentoFases() {
           life: 3000,
         });
       })
-      .finally(() => setLoadingVinculos(false));
-  }, [clienteSelecionado]);
+      .finally(() => setLoadingDialog(false));
+  }, [clienteDialog]);
 
-  const fasesAcompanhamento: FaseAcompanhamento[] = todasFases.map((fase) => {
-    const vinculo = clientesFases.find((cf) => cf.fase_id === fase.id);
-    return {
-      ...fase,
-      associada: !!vinculo,
-      concluida: vinculo?.concluido ?? false,
-      concluido_em: vinculo?.concluido_em ?? null,
-    };
-  });
-
-  const totalAssociadas = fasesAcompanhamento.filter((f) => f.associada).length;
-  const totalConcluidas = fasesAcompanhamento.filter(
-    (f) => f.associada && f.concluida,
-  ).length;
-  const progresso =
-    totalAssociadas > 0
-      ? Math.round((totalConcluidas / totalAssociadas) * 100)
-      : 0;
-
-  const selecionarCliente = (clientId: string) => {
-    setClienteSelecionado(clientId);
-    setLoadingVinculos(!!clientId);
-    if (!clientId) setClientesFases([]);
+  const abrirDialog = (cliente: ClienteFaseResumo) => {
+    setClienteDialog(cliente);
+    setFasesDialog([]);
+    setLoadingDialog(true);
+    setDialogAberto(true);
   };
 
-  const toggleAssociacao = async (fase: FaseAcompanhamento) => {
-    if (!clienteSelecionado) return;
+  const fecharDialog = () => {
+    setDialogAberto(false);
+    setClienteDialog(null);
+    setFasesDialog([]);
+  };
 
+  const toggleVinculada = (faseId: string) => {
+    setFasesDialog((prev) =>
+      prev.map((fase) => {
+        if (fase.id !== faseId) return fase;
+        const associada = !fase.associada;
+        return {
+          ...fase,
+          associada,
+          concluida: associada ? fase.concluida : false,
+          concluido_em: associada ? fase.concluido_em : null,
+        };
+      }),
+    );
+  };
+
+  const toggleConcluida = (faseId: string) => {
+    setFasesDialog((prev) =>
+      prev.map((fase) => {
+        if (fase.id !== faseId || !fase.associada) return fase;
+        const concluida = !fase.concluida;
+        return {
+          ...fase,
+          concluida,
+          concluido_em: concluida ? new Date().toISOString() : null,
+        };
+      }),
+    );
+  };
+
+  const salvar = async () => {
+    if (!clienteDialog) return;
+
+    setSalvando(true);
     try {
-      if (fase.associada) {
-        await desvincularFaseCliente(clienteSelecionado, fase.id);
-      } else {
-        await vincularFaseCliente(clienteSelecionado, fase.id);
-      }
-      await pesquisarClientesFases(clienteSelecionado).then(setClientesFases);
+      const payload: FaseClientePayload[] = fasesDialog.map((fase) => ({
+        fase_id: fase.id,
+        associada: fase.associada,
+        concluido: fase.concluida,
+        concluido_em: fase.concluido_em,
+      }));
+
+      await salvarFasesCliente(clienteDialog.id, payload);
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Fases do cliente atualizadas",
+        life: 3000,
+      });
+
+      fecharDialog();
+      carregarResumo();
     } catch (err) {
       toast.current?.show({
         severity: "error",
         summary: "Erro",
-        detail: err instanceof Error ? err.message : "Erro ao alterar vínculo",
+        detail: err instanceof Error ? err.message : "Erro ao salvar fases",
         life: 3000,
       });
-    }
-  };
-
-  const toggleConclusao = async (fase: FaseAcompanhamento) => {
-    if (!clienteSelecionado || !fase.associada) return;
-
-    try {
-      await atualizarStatusFaseCliente(
-        clienteSelecionado,
-        fase.id,
-        !fase.concluida,
-      );
-      await pesquisarClientesFases(clienteSelecionado).then(setClientesFases);
-    } catch (err) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Erro",
-        detail:
-          err instanceof Error ? err.message : "Erro ao alterar status da fase",
-        life: 3000,
-      });
+    } finally {
+      setSalvando(false);
     }
   };
 
   return {
     toast,
-    clientes,
-    clienteSelecionado,
-    fasesAcompanhamento,
-    progresso,
-    totalAssociadas,
-    totalConcluidas,
-    loadingClientes,
-    loadingFases,
-    loadingVinculos,
-    selecionarCliente,
-    toggleAssociacao,
-    toggleConclusao,
+    resumo,
+    dialogAberto,
+    clienteDialog,
+    fasesDialog,
+    loadingDialog,
+    salvando,
+    abrirDialog,
+    fecharDialog,
+    toggleVinculada,
+    toggleConcluida,
+    salvar,
   };
 }
