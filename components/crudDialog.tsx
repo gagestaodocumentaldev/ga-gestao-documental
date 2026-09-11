@@ -26,9 +26,9 @@ export default function CrudDialog({
   footerExtra,
 }: CrudDialogProps) {
   const footer = (
-    <>
+    <div className="flex justify-content-between align-items-center w-full">
+      <div className="flex gap-2">{footerExtra}</div>
       <div className="flex gap-2">
-        {footerExtra}
         <Button
           label="Cancelar"
           icon="pi pi-times"
@@ -36,15 +36,15 @@ export default function CrudDialog({
           onClick={onHide}
           disabled={salvando}
         />
+        <Button
+          label="Salvar"
+          icon="pi pi-check"
+          text
+          onClick={onSalvar}
+          loading={salvando}
+        />
       </div>
-      <Button
-        label="Salvar"
-        icon="pi pi-check"
-        text
-        onClick={onSalvar}
-        loading={salvando}
-      />
-    </>
+    </div>
   );
 
   return (
