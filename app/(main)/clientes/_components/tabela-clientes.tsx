@@ -410,6 +410,7 @@ export default function TabelaClientes({ titulo }: TabelaClientesProps) {
             }}
           />
         </div>
+
       </CrudDialog>
 
       <ConfirmarExclusaoDialog
