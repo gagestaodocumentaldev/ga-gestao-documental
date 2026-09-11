@@ -24,11 +24,18 @@ export default function AcompanhamentoFases({
     fasesDialog,
     loadingDialog,
     salvando,
+    dialogSelecaoAberto,
+    fasesSelecao,
+    loadingSelecao,
+    salvandoSelecao,
     abrirDialog,
     fecharDialog,
-    toggleVinculada,
     toggleConcluida,
     salvar,
+    abrirSelecaoFases,
+    fecharSelecaoFases,
+    salvarSelecaoFases,
+    toggleSelecaoFase,
   } = useAcompanhamentoFases();
 
   const colunaAcoes = (rowData: ClienteFaseResumo) => (
@@ -91,13 +98,21 @@ export default function AcompanhamentoFases({
           key={clienteDialog.id}
           visible={dialogAberto}
           titulo={`Fases do cliente: ${clienteDialog.nome}`}
+          tituloSelecao={`Selecionar fases — ${clienteDialog.nome}`}
           fases={fasesDialog}
+          fasesSelecao={fasesSelecao}
           loading={loadingDialog}
+          loadingSelecao={loadingSelecao}
           salvando={salvando}
+          salvandoSelecao={salvandoSelecao}
+          dialogSelecaoAberto={dialogSelecaoAberto}
           onHide={fecharDialog}
           onSalvar={salvar}
-          onToggleVinculada={toggleVinculada}
           onToggleConcluida={toggleConcluida}
+          onAbrirSelecao={abrirSelecaoFases}
+          onFecharSelecao={fecharSelecaoFases}
+          onSalvarSelecao={salvarSelecaoFases}
+          onToggleSelecaoFase={toggleSelecaoFase}
         />
       )}
     </>

@@ -12,6 +12,7 @@ interface CrudDialogProps {
   salvando: boolean;
   largura?: string;
   children: ReactNode;
+  footerExtra?: ReactNode;
 }
 
 export default function CrudDialog({
@@ -22,16 +23,20 @@ export default function CrudDialog({
   salvando,
   largura,
   children,
+  footerExtra,
 }: CrudDialogProps) {
   const footer = (
     <>
-      <Button
-        label="Cancelar"
-        icon="pi pi-times"
-        text
-        onClick={onHide}
-        disabled={salvando}
-      />
+      <div className="flex gap-2">
+        {footerExtra}
+        <Button
+          label="Cancelar"
+          icon="pi pi-times"
+          text
+          onClick={onHide}
+          disabled={salvando}
+        />
+      </div>
       <Button
         label="Salvar"
         icon="pi pi-check"
