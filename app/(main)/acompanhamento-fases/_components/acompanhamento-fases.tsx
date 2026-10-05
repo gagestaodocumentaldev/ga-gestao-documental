@@ -30,7 +30,7 @@ export default function AcompanhamentoFases({
     salvandoSelecao,
     abrirDialog,
     fecharDialog,
-    toggleConcluida,
+    alterarDataConclusao,
     salvar,
     abrirSelecaoFases,
     fecharSelecaoFases,
@@ -108,7 +108,7 @@ export default function AcompanhamentoFases({
           dialogSelecaoAberto={dialogSelecaoAberto}
           onHide={fecharDialog}
           onSalvar={salvar}
-          onToggleConcluida={toggleConcluida}
+          onAlterarDataConclusao={alterarDataConclusao}
           onAbrirSelecao={abrirSelecaoFases}
           onFecharSelecao={fecharSelecaoFases}
           onSalvarSelecao={salvarSelecaoFases}

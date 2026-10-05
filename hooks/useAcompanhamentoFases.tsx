@@ -53,6 +53,20 @@ function montarFasesSelecao(
   }));
 }
 
+function buildFasePayload(
+  fase_id: string,
+  associada: boolean,
+  concluida: boolean,
+  concluido_em?: string | null,
+): FaseClientePayload {
+  return {
+    fase_id,
+    associada,
+    concluido: concluida,
+    concluido_em: concluida ? (concluido_em ?? new Date().toISOString()) : null,
+  };
+}
+
 export function useAcompanhamentoFases() {
   const toast = useRef<Toast>(null);
 
@@ -160,15 +174,12 @@ export function useAcompanhamentoFases() {
 
       const payload: FaseClientePayload[] = fasesSelecao.map((fase) => {
         const conclusao = conclusaoPorFase.get(fase.id);
-        const concluido = conclusao?.concluida ?? false;
-        return {
-          fase_id: fase.id,
-          associada: fase.associada,
-          concluido,
-          concluido_em: concluido
-            ? (conclusao?.concluido_em ?? new Date().toISOString())
-            : null,
-        };
+        return buildFasePayload(
+          fase.id,
+          fase.associada,
+          conclusao?.concluida ?? false,
+          conclusao?.concluido_em,
+        );
       });
 
       await salvarFasesCliente(clienteDialog.id, payload);
@@ -205,17 +216,17 @@ export function useAcompanhamentoFases() {
     }
   };
 
-  const toggleConcluida = (faseId: string) => {
+  const alterarDataConclusao = (faseId: string, data: Date | null) => {
     setFasesDialog((prev) =>
-      prev.map((fase) => {
-        if (fase.id !== faseId || !fase.associada) return fase;
-        const concluida = !fase.concluida;
-        return {
-          ...fase,
-          concluida,
-          concluido_em: concluida ? new Date().toISOString() : null,
-        };
-      }),
+      prev.map((fase) =>
+        fase.id === faseId && fase.associada
+          ? {
+              ...fase,
+              concluida: !!data,
+              concluido_em: data ? data.toISOString() : null,
+            }
+          : fase,
+      ),
     );
   };
 
@@ -224,12 +235,14 @@ export function useAcompanhamentoFases() {
 
     setSalvando(true);
     try {
-      const payload: FaseClientePayload[] = fasesDialog.map((fase) => ({
-        fase_id: fase.id,
-        associada: fase.associada,
-        concluido: fase.concluida,
-        concluido_em: fase.concluido_em,
-      }));
+      const payload: FaseClientePayload[] = fasesDialog.map((fase) =>
+        buildFasePayload(
+          fase.id,
+          fase.associada,
+          fase.concluida,
+          fase.concluido_em,
+        ),
+      );
 
       await salvarFasesCliente(clienteDialog.id, payload);
 
@@ -268,7 +281,7 @@ export function useAcompanhamentoFases() {
     salvandoSelecao,
     abrirDialog,
     fecharDialog,
-    toggleConcluida,
+    alterarDataConclusao,
     salvar,
     abrirSelecaoFases,
     fecharSelecaoFases,

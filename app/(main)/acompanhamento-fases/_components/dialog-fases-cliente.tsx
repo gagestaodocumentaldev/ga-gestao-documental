@@ -1,5 +1,7 @@
 import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
+import { Calendar } from "primereact/calendar";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
 import { ProgressBar } from "primereact/progressbar";
 import { Tag } from "primereact/tag";
 
@@ -8,7 +10,6 @@ import DialogSelecionarFases, {
   FaseSelecaoState,
 } from "./dialog-selecionar-fases";
 import { FaseDialogState } from "../../../../hooks/useAcompanhamentoFases";
-import { formatDateTime } from "@/utils/dateUtil";
 
 interface DialogFasesClienteProps {
   visible: boolean;
@@ -23,7 +24,7 @@ interface DialogFasesClienteProps {
   dialogSelecaoAberto: boolean;
   onHide: () => void;
   onSalvar: () => void;
-  onToggleConcluida: (faseId: string) => void;
+  onAlterarDataConclusao: (faseId: string, data: Date | null) => void;
   onAbrirSelecao: () => void;
   onFecharSelecao: () => void;
   onSalvarSelecao: () => void;
@@ -43,7 +44,7 @@ export default function DialogFasesCliente({
   dialogSelecaoAberto,
   onHide,
   onSalvar,
-  onToggleConcluida,
+  onAlterarDataConclusao,
   onAbrirSelecao,
   onFecharSelecao,
   onSalvarSelecao,
@@ -59,6 +60,39 @@ export default function DialogFasesCliente({
 
   const fasesConsultoria = fasesAssociadas.filter((f) => f.consultoria);
   const fasesTreinamento = fasesAssociadas.filter((f) => f.treinamento);
+
+  const colunaFase = (fase: FaseDialogState) => (
+    <div className="flex align-items-center gap-2">
+      <span className="font-semibold">{fase.descricao}</span>
+      {fase.concluida && (
+        <Tag icon="pi pi-check" severity="success" value="Concluído" />
+      )}
+    </div>
+  );
+
+  const colunaData = (fase: FaseDialogState) => (
+    <div className="flex align-items-center gap-2">
+      <Calendar
+        id={`data-conclusao-${fase.id}`}
+        value={fase.concluido_em ? new Date(fase.concluido_em) : null}
+        onChange={(e) => onAlterarDataConclusao(fase.id, e.value as Date | null)}
+        dateFormat="dd/mm/yy"
+        mask="99/99/9999"
+        showIcon
+        placeholder="Data de conclusão"
+        className="w-full"
+      />
+      <Button
+        icon="pi pi-times"
+        rounded
+        text
+        severity="danger"
+        tooltip="limpar data"
+        disabled={!fase.concluida}
+        onClick={() => onAlterarDataConclusao(fase.id, null)}
+      />
+    </div>
+  );
 
   const renderBloco = (
     tituloBloco: string,
@@ -76,37 +110,25 @@ export default function DialogFasesCliente({
             {lista.filter((f) => f.concluida).length}/{lista.length} concluídas
           </span>
         </div>
-        <div className="p-3 flex flex-column gap-3">
-          {lista.map((fase) => (
-            <div
-              key={fase.id}
-              className="flex align-items-start justify-content-between gap-3 flex-wrap"
-            >
-              <div>
-                <label className="font-semibold">{fase.descricao}</label>
-                {fase.concluida && fase.concluido_em && (
-                  <div className="text-color-secondary text-sm">
-                    Concluído em: {formatDateTime(fase.concluido_em)}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex align-items-center gap-2">
-                <Checkbox
-                  inputId={`concluir-${fase.id}`}
-                  checked={fase.concluida}
-                  onChange={() => onToggleConcluida(fase.id)}
-                />
-                <label
-                  htmlFor={`concluir-${fase.id}`}
-                  className="cursor-pointer text-sm"
-                >
-                  Concluído
-                </label>
-              </div>
-            </div>
-          ))}
-        </div>
+        <DataTable
+          value={lista}
+          dataKey="id"
+          showGridlines
+          stripedRows
+          responsiveLayout="scroll"
+          className="p-datatable-sm"
+        >
+          <Column
+            header="Fase"
+            body={colunaFase}
+            style={{ minWidth: "12rem" }}
+          />
+          <Column
+            header="Data de conclusão"
+            body={colunaData}
+            style={{ minWidth: "14rem", textAlign: "center" }}
+          />
+        </DataTable>
       </div>
     );
   };
